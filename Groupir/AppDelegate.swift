@@ -7,6 +7,10 @@
 
 import UIKit
 
+// TODO: add option to merge groups, and retain the information
+// TODO: add option to delete/share a single item
+// TODO: refresh after changes
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?

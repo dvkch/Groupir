@@ -2,7 +2,7 @@ inhibit_all_warnings!
 use_frameworks!
 
 target "Groupir" do
-    platform :ios, "13.0"
+    platform :ios, "14.0"
     pod 'BrightFutures'
     pod 'SnapKit'
     pod 'SVProgressHUD'
