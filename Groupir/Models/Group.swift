@@ -7,10 +7,38 @@
 
 import Foundation
 
-struct Group {
+struct Group: Equatable {
+    // MARK: Init
     fileprivate(set) var medias: [Media] = []
     var size: UInt64 {
         return medias.map(\.size).reduce(0, +)
+    }
+
+    // MARK: Formatters
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .none
+        formatter.timeZone = TimeZone.autoupdatingCurrent
+        return formatter
+    }()
+
+    private static let sizeFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .binary
+        return formatter
+    }()
+}
+
+extension Group: Comparable {
+    static func < (lhs: Group, rhs: Group) -> Bool {
+        return lhs.size < rhs.size
+    }
+}
+
+extension Group: CustomStringConvertible {
+    var description: String {
+        "\(Group.dateFormatter.string(from: medias.first!.date)), \(medias.count) medias, \(Group.sizeFormatter.string(fromByteCount: Int64(size)))"
     }
 }
 

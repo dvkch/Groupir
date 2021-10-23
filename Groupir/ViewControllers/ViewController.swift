@@ -9,15 +9,15 @@ import UIKit
 import Photos
 import SnapKit
 import SVProgressHUD
+import BrightFutures
 
 class ViewController: UIViewController {
 
     // MARK: ViewController
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Biggest", style: .plain, target: self, action: #selector(scrollToBiggest))
-        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Biggest", image: nil, primaryAction: nil, menu: nil)
+
         collectionViewLayout.scrollDirection = .vertical
         collectionViewLayout.itemSize = .init(width: 100, height: 100)
         collectionViewLayout.sectionInset.bottom = 50
@@ -36,25 +36,21 @@ class ViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if loadResult == nil {
-            self.loadGroups()
+        if groups.isEmpty {
+            loadGroups()
         }
     }
 
     // MARK: Properties
-    private var loadResult: Result<[Group], AppError>? {
-        didSet {
-            if case .success(let groups) = loadResult {
-                self.groups = groups
-            }
-            else {
-                self.groups = []
-            }
-        }
-    }
     private var groups: [Group] = [] {
         didSet {
-            collectionView.reloadData()
+            let biggestGroups = groups.sorted().reversed().prefix(10)
+            let actions: [UIMenuElement] = biggestGroups.map { group in
+                UIAction(title: group.description) { [weak self] _ in
+                    self?.scrollToGroup(group)
+                }
+            }
+            navigationItem.rightBarButtonItem?.menu = UIMenu(children: actions)
         }
     }
 
@@ -70,28 +66,77 @@ class ViewController: UIViewController {
         MediasManager.shared.groupedImages(progress: { progress in
             SVProgressHUD.showProgress(progress)
         }).andThen { result in
-            self.loadResult = result
             SVProgressHUD.dismiss()
+        }.onSuccess { groups in
+            self.groups = groups
+            self.collectionView.reloadData()
         }.onFailure { error in
             let alert = UIAlertController(title: error.localizedDescription, message: nil, preferredStyle: .alert)
+            error.recoveryOptions.enumerated().forEach { option in
+                alert.addAction(UIAlertAction(title: option.element, style: .default, handler: { _ in _ = error.attemptRecovery(optionIndex: option.offset) }))
+            }
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
     }
     
-    @objc private func scrollToBiggest() {
-        guard let biggest = groups.enumerated().max(by: { $0.element.size < $1.element.size })?.offset else { return }
-        guard let attributes = collectionViewLayout.layoutAttributesForSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, at: IndexPath(item: 0, section: biggest)) else { return }
+    private func scrollToGroup(_ group: Group) {
+        guard let index = groups.firstIndex(of: group) else { return }
+        let indexPath = IndexPath(item: 0, section: index)
+        guard let attributes = collectionViewLayout.layoutAttributesForSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, at: indexPath) else { return }
         collectionView.setContentOffset(CGPoint(x: 0, y: attributes.frame.origin.y - collectionView.adjustedContentInset.top), animated: true)
     }
-
-    // MARK: Content
 }
 
 extension ViewController: GroupCellDelegate {
     func groupCell(_ groupCell: GroupCell, tappedShareOn group: Group) {
-        let shareVC = UIActivityViewController(activityItems: group.medias.map(\.asset), applicationActivities: nil)
-        present(shareVC, animated: true, completion: nil)
+        SVProgressHUD.show()
+        
+        group.medias
+            .map { $0.obtainExportURL() }
+            .sequence()
+            .onSuccess { items in
+                SVProgressHUD.dismiss()
+                let shareVC = UIActivityViewController(activityItems: Array(items.joined()), applicationActivities: nil)
+                shareVC.completionWithItemsHandler = { activityType, completed, _, activityError in
+                    if let activityError = activityError {
+                        print("Error:", activityError)
+                    }
+                }
+                self.present(shareVC, animated: true, completion: {  SVProgressHUD.dismiss() })
+            }
+    }
+    
+    func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: Group) {
+        guard let index = groups.firstIndex(of: group), index > 0 else { return }
+        let prevGroup = groups[index - 1]
+
+        collectionView.performBatchUpdates({
+            let newGroup = Group(medias: prevGroup.medias + group.medias)
+            groups.remove(at: index)
+            groups.remove(at: index - 1)
+            groups.insert(newGroup, at: index - 1)
+            collectionView.reloadSections(IndexSet(integer: index - 1))
+            collectionView.deleteSections(IndexSet(integer: index))
+        }, completion: nil)
+    }
+    
+    func groupCell(_ groupCell: GroupCell, tappedDeleteOn group: Group) {
+        guard let index = groups.firstIndex(of: group) else { return }
+
+        PHPhotoLibrary.shared().performChanges {
+            let assets = group.medias.map(\.asset)
+            PHAssetChangeRequest.deleteAssets(assets as NSArray)
+        } completionHandler: { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    self.collectionView.performBatchUpdates({
+                        self.groups.remove(at: index)
+                        self.collectionView.deleteSections(IndexSet(integer: index))
+                    }, completion: nil)
+                }
+            }
+        }
     }
 }
 

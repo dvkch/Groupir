@@ -18,7 +18,7 @@ class MediaViewController: UIViewController {
         view.backgroundColor = .black
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "xmark", withConfiguration: UIImage.SymbolConfiguration(weight: .bold)),
+            image: UIImage(systemName: "xmark", compatibleWith: traitCollection),
             style: .plain, target: self, action: #selector(closeButtonTap)
         )
         

@@ -9,6 +9,8 @@ import UIKit
 
 protocol GroupCellDelegate: NSObjectProtocol {
     func groupCell(_ groupCell: GroupCell, tappedShareOn group: Group)
+    func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: Group)
+    func groupCell(_ groupCell: GroupCell, tappedDeleteOn group: Group)
 }
 
 class GroupCell: UICollectionReusableView {
@@ -27,8 +29,22 @@ class GroupCell: UICollectionReusableView {
 
         shareButton.setImage(UIImage(systemName: "ellipsis.circle.fill", withConfiguration: UIImage.SymbolConfiguration(weight: .bold)), for: .normal)
         shareButton.contentHorizontalAlignment = .trailing
-        shareButton.addTarget(self, action: #selector(shareButtonTap), for: .primaryActionTriggered)
         shareButton.setContentHuggingPriority(.required, for: .horizontal)
+        shareButton.showsMenuAsPrimaryAction = true
+        shareButton.menu = UIMenu(children: [
+            UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
+                guard let self = self, let group = self.group else { return }
+                self.delegate?.groupCell(self, tappedShareOn: group)
+            },
+            UIAction(title: "Merge with previous group", image: UIImage(systemName: "arrow.triangle.merge")) { [weak self] _ in
+                guard let self = self, let group = self.group else { return }
+                self.delegate?.groupCell(self, tappedMergeWithPreviousOn: group)
+            },
+            UIAction(title: "Delete", image: UIImage(systemName: "trash")) { [weak self] _ in
+                guard let self = self, let group = self.group else { return }
+                self.delegate?.groupCell(self, tappedDeleteOn: group)
+            },
+        ])
         addSubview(shareButton)
         shareButton.snp.makeConstraints { make in
             make.left.equalTo(label.snp.right).offset(8)
@@ -53,21 +69,10 @@ class GroupCell: UICollectionReusableView {
     // MARK: Views
     private let label = UILabel()
     private let shareButton = UIButton(type: .custom)
-    private let sizeFormatter: ByteCountFormatter = {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .binary
-        return formatter
-    }()
-    
-    // MARK: Actions
-    @objc private func shareButtonTap() {
-        guard let group = group else { return }
-        delegate?.groupCell(self, tappedShareOn: group)
-    }
     
     // MARK: Content
     private func updateContent() {
         guard let group = group else { return }
-        label.text = "\(group.medias.count) medias, \(sizeFormatter.string(fromByteCount: Int64(group.size)))"
+        label.text = group.description
     }
 }

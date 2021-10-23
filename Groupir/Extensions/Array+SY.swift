@@ -15,3 +15,17 @@ extension Array {
         }
     }
 }
+
+extension EnumeratedSequence where Base.Element: Comparable {
+    func sorted() -> [Iterator.Element] {
+        return sorted(by: { $0.element < $1.element })
+    }
+    
+    func min() -> Iterator.Element? {
+        return self.min(by: { $0.element < $1.element })
+    }
+
+    func max() -> Iterator.Element? {
+        return self.max(by: { $0.element < $1.element })
+    }
+}

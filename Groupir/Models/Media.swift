@@ -9,11 +9,8 @@ import Foundation
 import Photos
 import BrightFutures
 
-struct Media {
-    let asset: PHAsset
-    let date: Date
-    let size: UInt64
-
+class Media {
+    // MARK: Init
     init?(asset: PHAsset) {
         guard let date = [asset.creationDate, asset.modificationDate].compactMap({ $0 }).min() else { return nil }
 
@@ -24,67 +21,98 @@ struct Media {
             self.size = size
         }
         else {
-            let resources = PHAssetResource.assetResources(for: asset)
+            self.size = 0
             self.size = resources.compactMap { $0.value(forKey: "fileSize") as? CLong }.compactMap { UInt64($0) }.reduce(0, +)
         }
     }
-/*
-    func obtainExportURL(allowRetry: Bool = true) -> Future<URL, Error> {
-        let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    
+    // MARK: Properties
+    let asset: PHAsset
+    let date: Date
+    private(set) var size: UInt64
 
-        switch asset.mediaType {
-        case .video:
-            let options = PHVideoRequestOptions()
-            options.deliveryMode = .highQualityFormat
-            options.isNetworkAccessAllowed = true
-            PHImageManager.default().requestExportSession(forVideo: asset, options: options, exportPreset: AVAssetExportPresetPassthrough) { session, info in
+    // MARK: Resources
+    private var loadedResources: [PHAssetResource]?
+    private var resources: [PHAssetResource] {
+        // this call is expensive, let's make sure we don't call it unless we have to (hence the assets size cache)
+        loadedResources = loadedResources ?? PHAssetResource.assetResources(for: asset)
+        return loadedResources!
+    }
 
-                // TODO: find original filename
-                let tempPath = docsDir.appendingPathComponent(asset.localIdentifier)
-
-                NSURL *outputURL = [NSURL fileURLWithPath:videoPath];
-                NSLog(@"Final path %@",outputURL);
-                exportSession.outputFileType=AVFileTypeQuickTimeMovie;
-                exportSession.outputURL=outputURL;
-
-                [exportSession exportAsynchronouslyWithCompletionHandler:^{
-                    if (exportSession.status == AVAssetExportSessionStatusFailed) {
-                        NSLog(@"failed");
-                    } else if(exportSession.status == AVAssetExportSessionStatusCompleted){
-                        NSLog(@"completed!");
-                        dispatch_async(dispatch_get_main_queue(), ^(void) {
-                            NSArray *activityItems = [NSArray arrayWithObjects:outputURL, nil];
-
-                            UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
-                            activityViewController.completionWithItemsHandler = ^(NSString *activityType, BOOL completed, NSArray *returnedItems, NSError *activityError) {
-                                NSError *error;
-                                if ([manager fileExistsAtPath:videoPath]) {
-                                    BOOL success = [manager removeItemAtPath:videoPath error:&error];
-                                    if (success) {
-                                        NSLog(@"Successfully removed temp video!");
-                                    }
-                                }
-                                [weakSelf dismissViewControllerAnimated:YES completion:nil];
-                            };
-                            [weakSelf presentViewController:activityViewController animated:YES completion:nil];
-                        });
-                    }
-                }];            }
-
-        case .image:
-            //
+    private var exportableMedias: [ExportableMedia] {
+        var resources = self.resources
+            .filter { !$0.type.isUnknown } // remove unknown kinds, usually AAE files
+            .filter { $0.type != .adjustmentData } // remove adjustment files
+            .filter { $0.type != .adjustmentBasePhoto } // remove PenultimateFullSizeRender, used to show previous edit version
+        
+        var exportabledMedias = [ExportableMedia]()
+        
+        // Video
+        if let edit = resources.first(where: { $0.type == .fullSizeVideo }), let original = resources.first(where: { $0.type == .video }) {
+            exportabledMedias.append(ExportableMedia(asset: asset, resource: edit, originalResource: original))
+            resources.removeAll { $0 == edit }
+            resources.removeAll { $0 == original }
+            resources.removeAll { $0.type == .fullSizePhoto }
         }
-    }*/
+        else if let original = resources.first(where: { $0.type == .video }) {
+            exportabledMedias.append(ExportableMedia(asset: asset, resource: original, originalResource: nil))
+            resources.removeAll { $0 == original }
+            resources.removeAll { $0.type == .fullSizePhoto }
+        }
+        
+        // Photo
+        if let edit = resources.first(where: { $0.type == .fullSizePhoto }), let original = resources.first(where: { $0.type == .photo }) {
+            exportabledMedias.append(ExportableMedia(asset: asset, resource: edit, originalResource: original))
+            resources.removeAll { $0 == edit }
+            resources.removeAll { $0 == original }
+        }
+        else if let original = resources.first(where: { $0.type == .photo }) {
+            exportabledMedias.append(ExportableMedia(asset: asset, resource: original, originalResource: nil))
+            resources.removeAll { $0 == original }
+        }
+
+        // Live photo
+        if let edit = resources.first(where: { $0.type == .fullSizePairedVideo }), let original = resources.first(where: { $0.type == .pairedVideo }) {
+            exportabledMedias.append(ExportableMedia(asset: asset, resource: edit, originalResource: original))
+            resources.removeAll { $0 == edit }
+            resources.removeAll { $0 == original }
+        }
+        else if let original = resources.first(where: { $0.type == .pairedVideo }) {
+            exportabledMedias.append(ExportableMedia(asset: asset, resource: original, originalResource: nil))
+            resources.removeAll { $0 == original }
+        }
+        
+        // RAW
+        if let original = resources.first(where: { $0.type == .alternatePhoto }) {
+            exportabledMedias.append(ExportableMedia(asset: asset, resource: original, originalResource: nil))
+            resources.removeAll { $0 == original }
+        }
+        
+        #if DEBUG
+        if resources.count > 0 {
+            let hash = resources.reduce(into: [:], { hash, resource in hash[resource.originalFilename] = resource.type.description })
+            fatalError("UNHANDLED RESOURCES: \(hash)")
+        }
+        #endif
+        
+        return exportabledMedias
+    }
+
+    func obtainExportURL(allowRetry: Bool = true) -> Future<[ExportableMedia], AppError> {
+        return Future.init { resolver in
+            resolver(.success(exportableMedias))
+        }
+    }
 }
 
 extension Media: Equatable {
-    static func == (lhs: Self, rhs: Self) -> Bool {
+    static func == (lhs: Media, rhs: Media) -> Bool {
         return lhs.asset == rhs.asset
     }
 }
 
 extension Media: Comparable {
-    static func < (lhs: Self, rhs: Self) -> Bool {
+    static func < (lhs: Media, rhs: Media) -> Bool {
         return lhs.date < rhs.date
     }
 }

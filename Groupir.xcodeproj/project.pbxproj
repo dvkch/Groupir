@@ -9,11 +9,14 @@
 /* Begin PBXBuildFile section */
 		1F07AAE35E60A79B79513C89 /* Pods_Groupir.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9BD3EF19DA6F19842076781 /* Pods_Groupir.framework */; };
 		973646672722C73A00B47F5D /* MediaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 973646662722C73A00B47F5D /* MediaViewController.swift */; };
+		9746DF16272451D800F01B36 /* PHAssetResource+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9746DF15272451D800F01B36 /* PHAssetResource+SY.swift */; };
 		9753403727217F960079F537 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9753403627217F960079F537 /* AppDelegate.swift */; };
 		9753403927217F960079F537 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9753403827217F960079F537 /* SceneDelegate.swift */; };
 		9753403B27217F960079F537 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9753403A27217F960079F537 /* ViewController.swift */; };
 		9753404027217F980079F537 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9753403F27217F980079F537 /* Assets.xcassets */; };
 		9753404327217F980079F537 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9753404127217F980079F537 /* LaunchScreen.storyboard */; };
+		975CF38227242EB800F23511 /* ExportableMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975CF38127242EB800F23511 /* ExportableMedia.swift */; };
+		975CF384272438CA00F23511 /* PHAssetResourceType+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975CF383272438CA00F23511 /* PHAssetResourceType+SY.swift */; };
 		975D84202722D7D0004B6D63 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975D841F2722D7D0004B6D63 /* CacheManager.swift */; };
 		975D84222722D813004B6D63 /* UserDefaults+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975D84212722D813004B6D63 /* UserDefaults+SY.swift */; };
 		97F9DB552721816700A7DCC3 /* Media.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB542721816700A7DCC3 /* Media.swift */; };
@@ -30,6 +33,7 @@
 		654FB45A1DE146F16235507E /* Pods-Groupir.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Groupir.debug.xcconfig"; path = "Target Support Files/Pods-Groupir/Pods-Groupir.debug.xcconfig"; sourceTree = "<group>"; };
 		6A3A003AB32A119A7BC9CBA1 /* Pods-Groupir.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Groupir.release.xcconfig"; path = "Target Support Files/Pods-Groupir/Pods-Groupir.release.xcconfig"; sourceTree = "<group>"; };
 		973646662722C73A00B47F5D /* MediaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViewController.swift; sourceTree = "<group>"; };
+		9746DF15272451D800F01B36 /* PHAssetResource+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PHAssetResource+SY.swift"; sourceTree = "<group>"; };
 		9753403327217F960079F537 /* Groupir.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Groupir.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9753403627217F960079F537 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9753403827217F960079F537 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -37,6 +41,8 @@
 		9753403F27217F980079F537 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9753404227217F980079F537 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		9753404427217F980079F537 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		975CF38127242EB800F23511 /* ExportableMedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportableMedia.swift; sourceTree = "<group>"; };
+		975CF383272438CA00F23511 /* PHAssetResourceType+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PHAssetResourceType+SY.swift"; sourceTree = "<group>"; };
 		975D841F2722D7D0004B6D63 /* CacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManager.swift; sourceTree = "<group>"; };
 		975D84212722D813004B6D63 /* UserDefaults+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+SY.swift"; sourceTree = "<group>"; };
 		97F9DB542721816700A7DCC3 /* Media.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Media.swift; sourceTree = "<group>"; };
@@ -118,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				97F9DB5F272185DE00A7DCC3 /* AppError.swift */,
+				975CF38127242EB800F23511 /* ExportableMedia.swift */,
 				97F9DB562721817900A7DCC3 /* Group.swift */,
 				97F9DB542721816700A7DCC3 /* Media.swift */,
 			);
@@ -138,6 +145,8 @@
 			children = (
 				97F9DB59272182D600A7DCC3 /* Array+SY.swift */,
 				97F9DB5B2721849800A7DCC3 /* Date+SY.swift */,
+				9746DF15272451D800F01B36 /* PHAssetResource+SY.swift */,
+				975CF383272438CA00F23511 /* PHAssetResourceType+SY.swift */,
 				975D84212722D813004B6D63 /* UserDefaults+SY.swift */,
 			);
 			path = Extensions;
@@ -168,6 +177,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9753404727217F980079F537 /* Build configuration list for PBXNativeTarget "Groupir" */;
 			buildPhases = (
+				9746DF1227244B7600F01B36 /* TODOs */,
 				2A91E408226C8B21F1F183C9 /* [CP] Check Pods Manifest.lock */,
 				9753402F27217F960079F537 /* Sources */,
 				9753403027217F960079F537 /* Frameworks */,
@@ -251,6 +261,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		9746DF1227244B7600F01B36 /* TODOs */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = TODOs;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "declare -a TAGS=(\"TODO:\" \"FIXME:\" \"LATER:\")\necho \"searching ${SRCROOT} for ${TAGS}\"\n\nfor TAG in ${TAGS[@]}; do\nfind \"${SRCROOT}/Groupir\" \\( -name \"*.h\" -or -name \"*.m\" -or -name \"*.swift\" \\) -print0 | xargs -0 egrep --with-filename --line-number --only-matching \"($TAG).*\\$\" | perl -p -e \"s/($TAG)/ warning: \\$1/\"\ndone\n";
+		};
 		B7925DFE54302B78903548D7 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -275,14 +303,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				975CF384272438CA00F23511 /* PHAssetResourceType+SY.swift in Sources */,
 				975D84202722D7D0004B6D63 /* CacheManager.swift in Sources */,
 				97F9DB552721816700A7DCC3 /* Media.swift in Sources */,
+				9746DF16272451D800F01B36 /* PHAssetResource+SY.swift in Sources */,
 				9753403B27217F960079F537 /* ViewController.swift in Sources */,
 				97F9DB6527219A9200A7DCC3 /* GroupCell.swift in Sources */,
 				97F9DB60272185DE00A7DCC3 /* AppError.swift in Sources */,
 				9753403727217F960079F537 /* AppDelegate.swift in Sources */,
 				973646672722C73A00B47F5D /* MediaViewController.swift in Sources */,
 				97F9DB5A272182D600A7DCC3 /* Array+SY.swift in Sources */,
+				975CF38227242EB800F23511 /* ExportableMedia.swift in Sources */,
 				975D84222722D813004B6D63 /* UserDefaults+SY.swift in Sources */,
 				97F9DB572721817900A7DCC3 /* Group.swift in Sources */,
 				97F9DB63272189CF00A7DCC3 /* MediaCell.swift in Sources */,
@@ -357,7 +388,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -412,7 +443,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;

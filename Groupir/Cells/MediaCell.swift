@@ -27,7 +27,7 @@ class MediaCell: UICollectionViewCell {
         kindImageView.layer.shadowColor = UIColor.systemBackground.cgColor
         kindImageView.layer.shadowOffset = .zero
         kindImageView.layer.shadowOpacity = 0.8
-        kindImageView.layer.shadowRadius = 2
+        kindImageView.layer.shadowRadius = 1
         contentView.addSubview(kindImageView)
         kindImageView.snp.makeConstraints { make in
             make.size.equalToSuperview().multipliedBy(0.3)
@@ -45,12 +45,22 @@ class MediaCell: UICollectionViewCell {
             updateContent()
         }
     }
+    private var mediaRequestID: PHImageRequestID?
     
     // MARK: Views
     private let imageView = UIImageView()
     private let kindImageView = UIImageView()
     
     // MARK: Content
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        media = nil
+        if let mediaRequestID = mediaRequestID {
+            PHImageManager.default().cancelImageRequest(mediaRequestID)
+        }
+        mediaRequestID = nil
+    }
+
     private func updateContent() {
         guard let media = media else {
             imageView.image = nil
@@ -75,9 +85,18 @@ class MediaCell: UICollectionViewCell {
             kindImageView.layer.shadowColor = UIColor.systemBackground.cgColor
         }
         
-        PHImageManager.default().requestImage(for: media.asset, targetSize: imageView.bounds.size, contentMode: .aspectFill, options: nil) { [weak self] (image, _) in
+        let options = PHImageRequestOptions()
+        options.version = .current
+        options.isNetworkAccessAllowed = false
+        options.deliveryMode = .fastFormat
+        options.resizeMode = .fast
+        mediaRequestID = PHImageManager.default().requestImage(for: media.asset, targetSize: imageView.bounds.size, contentMode: .aspectFill, options: options) { [weak self] (image, _) in
             guard self?.media == media else { return }
-            self?.imageView.image = image
+            if #available(iOS 15.0, *) {
+                self?.imageView.image = image?.preparingForDisplay()
+            } else {
+                self?.imageView.image = image
+            }
         }
     }
 }

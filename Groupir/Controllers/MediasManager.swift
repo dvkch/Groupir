@@ -41,6 +41,7 @@ class MediasManager {
                 var assets = [PHAsset]()
                 assets.reserveCapacity(result.count)
                 result.enumerateObjects { asset, _, _ in assets.append(asset) }
+                assets = assets.filter { $0.sourceType == .typeUserLibrary }
                 resolver(.success(assets))
             }
         }
