@@ -91,7 +91,7 @@ class MediasManager: NSObject {
     
     // MARK: Library properties
     private var assets: [PHAsset] = []
-    private var medias: [Media] = [] {
+    private(set) var medias: [Media] = [] {
         didSet {
             PrefsManager.shared.cacheFileSizes(from: medias)
             recomputeEvents()
@@ -145,7 +145,7 @@ class MediasManager: NSObject {
                         self.medias = assets.enumerated().compactMap {
                             progress = Float($0.offset) / Float(assets.count)
                             return Media(asset: $0.element)
-                        }
+                        }.sorted()
                         resolver(.success(()))
                     }
                 }

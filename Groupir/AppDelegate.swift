@@ -7,7 +7,6 @@
 
 import UIKit
 
-// TODO: state restoration pour revenir sur l'album où on était avant que l'appli se quitte
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?

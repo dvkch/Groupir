@@ -17,6 +17,7 @@ class ViewController: UIViewController {
     // MARK: ViewController
     override func viewDidLoad() {
         super.viewDidLoad()
+        restorationIdentifier = "ViewController"
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Biggest", image: nil, primaryAction: nil, menu: nil)
 
         segmentControl.insertSegment(withTitle: "Events", at: 0, animated: false)
@@ -90,7 +91,41 @@ class ViewController: UIViewController {
             loadGroups()
         }
     }
+    
+    // MARK: Restoration
+    func updateUserActivity() {
+        let currentUserActivity = view.window?.windowScene?.userActivity ?? NSUserActivity(activityType: SceneDelegate.defaultActivityType)
+        currentUserActivity.addUserInfoEntries(from: ["selected_segment": segmentControl.selectedSegmentIndex])
 
+        if let topVisibleEventMedia = eventsCollectionView.visibleCells.compactMap({ ($0 as? MediaCell)?.media }).sorted().first {
+            currentUserActivity.addUserInfoEntries(from: ["top_event_media_date": topVisibleEventMedia.date])
+        }
+        if let topVisibleAlbumMedia = albumsCollectionView.visibleCells.compactMap({ ($0 as? MediaCell)?.media }).first,
+           let section = albumsDataSource.snapshot().sectionIdentifier(containingItem: topVisibleAlbumMedia)
+        {
+            currentUserActivity.addUserInfoEntries(from: ["top_album_unique_id": section.uniqueID])
+        }
+        view.window?.windowScene?.userActivity = currentUserActivity
+    }
+
+    func continueFrom(activity: NSUserActivity) {
+        segmentControl.selectedSegmentIndex = (activity.userInfo?["selected_segment"] as? Int) ?? 0
+        let topVisibleEventDate = (activity.userInfo?["top_event_media_date"] as? Date)
+        let topVisibleAlbumUniqueID = (activity.userInfo?["top_album_unique_id"] as? String)
+
+        MediasManager.shared.reloadEvents(progress: nil).onSuccess { _ in
+            if let date = topVisibleEventDate,
+                let media = MediasManager.shared.medias.first(where: { $0.date >= date }),
+               let section = self.eventsDataSource.snapshot().sectionIdentifier(containingItem: media)
+            {
+                self.scrollTo(section, animated: false)
+            }
+            if let uniqueID = topVisibleAlbumUniqueID, let album = MediasManager.shared.albums.value.first(where: { $0.uniqueID == uniqueID }) {
+                self.scrollTo(album, animated: false)
+            }
+        }
+    }
+    
     // MARK: Properties
     private var ignoreLibraryChanges: Bool = false
     private var eventsDataSource: UICollectionViewDiffableDataSource<Event, Media>!
@@ -127,17 +162,17 @@ class ViewController: UIViewController {
         updateNavBar()
     }
 
-    private func scrollToEventGroup(_ group: Groupable) {
+    private func scrollTo(_ group: Groupable, animated: Bool) {
         let scrollFunction = { (collectionView: UICollectionView, section: Int) in
             let indexPath = IndexPath(item: 0, section: section)
             guard let attributes = collectionView.collectionViewLayout.layoutAttributesForSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, at: indexPath) else { return }
-            collectionView.setContentOffset(CGPoint(x: 0, y: attributes.frame.origin.y - collectionView.adjustedContentInset.top), animated: true)
+            collectionView.setContentOffset(CGPoint(x: 0, y: attributes.frame.origin.y - collectionView.adjustedContentInset.top), animated: animated)
         }
         
-        if let group = group as? Event, segmentControl.selectedSegmentIndex == 0, let index = eventsDataSource.snapshot().indexOfSection(group) {
+        if let group = group as? Event, let index = eventsDataSource.snapshot().indexOfSection(group) {
             scrollFunction(eventsCollectionView, index)
         }
-        if let group = group as? Album, segmentControl.selectedSegmentIndex == 1, let index = albumsDataSource.snapshot().indexOfSection(group) {
+        if let group = group as? Album, let index = albumsDataSource.snapshot().indexOfSection(group) {
             scrollFunction(albumsCollectionView, index)
         }
     }
@@ -218,7 +253,7 @@ class ViewController: UIViewController {
 
         let actions: [UIMenuElement] = biggestGroups.map { group in
             UIAction(title: [group.title, group.details].joined(separator: "\n")) { [weak self] _ in
-                self?.scrollToEventGroup(group)
+                self?.scrollTo(group, animated: true)
             }
         }
         navigationItem.rightBarButtonItem?.menu = UIMenu(children: actions)
@@ -331,4 +366,3 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: actionProvider)
     }
 }
-
