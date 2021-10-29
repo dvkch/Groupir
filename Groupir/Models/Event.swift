@@ -10,7 +10,7 @@ import Foundation
 struct Event {
 
     // MARK: Properties
-    let uniqueID = UUID().uuidString
+    private(set) var uniqueID = UUID().uuidString
     private(set) var medias: [Media] = []
 
     var title: String {
@@ -28,6 +28,9 @@ struct Event {
         }
         medias.append(contentsOf: group.medias)
         medias.sort()
+
+        // helpful to force refreshing the section headers after a merge
+        uniqueID = UUID().uuidString
     }
     
     mutating func remove(medias: [Media]) {

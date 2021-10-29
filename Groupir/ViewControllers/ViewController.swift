@@ -283,22 +283,21 @@ extension ViewController: GroupCellDelegate {
         updatedGroups[index - 1].merge(withNextGroup: updatedGroups[index])
         updatedGroups.remove(at: index)
         MediasManager.shared.events.value = updatedGroups
+        
+        // TODO: fix headers not updating properly
     }
     
     func groupCell(_ groupCell: GroupCell, tappedResplitOn group: Event) {
         var updatedGroups = MediasManager.shared.events.value
         guard let index = updatedGroups.firstIndex(of: group) else { return }
 
-        // TODO: fix this
-        print("GROUP", group)
-        PrefsManager.shared.unlink(group: group)
+        PrefsManager.shared.unlink(group: updatedGroups[index])
         
+        let mediasToRegroup = updatedGroups[index].medias
         updatedGroups.remove(at: index)
-        Event.group(medias: group.medias).reversed().forEach {
-            print("ADDING NEW GROUP")
+        Event.group(medias: mediasToRegroup).reversed().forEach {
             updatedGroups.insert($0, at: index)
         }
-        print("finished new groups")
         MediasManager.shared.events.value = updatedGroups
     }
     
