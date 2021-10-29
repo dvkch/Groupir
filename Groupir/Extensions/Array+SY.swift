@@ -16,6 +16,12 @@ extension Array {
     }
 }
 
+extension Collection {
+    var isNotEmpty: Bool {
+        return !isEmpty
+    }
+}
+
 extension EnumeratedSequence where Base.Element: Comparable {
     func sorted() -> [Iterator.Element] {
         return sorted(by: { $0.element < $1.element })

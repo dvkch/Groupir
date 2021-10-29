@@ -10,6 +10,7 @@ import Photos
 import SnapKit
 import SVProgressHUD
 import BrightFutures
+import QuickLook
 
 class ViewController: UIViewController {
 
@@ -18,58 +19,101 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Biggest", image: nil, primaryAction: nil, menu: nil)
 
-        collectionViewLayout.scrollDirection = .vertical
-        collectionViewLayout.itemSize = .init(width: 100, height: 100)
-        collectionViewLayout.sectionInset.bottom = 50
-        collectionViewLayout.minimumInteritemSpacing = 0
-        collectionViewLayout.minimumLineSpacing = 0
-        collectionView.backgroundColor = .systemBackground
-        collectionView.register(MediaCell.self, forCellWithReuseIdentifier: "MediaCell")
-        collectionView.register(GroupCell.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "GroupCell")
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        view.addSubview(collectionView)
-        collectionView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+        segmentControl.insertSegment(withTitle: "Events", at: 0, animated: false)
+        segmentControl.insertSegment(withTitle: "Groups", at: 1, animated: false)
+        segmentControl.selectedSegmentIndex = 0
+        segmentControl.addTarget(self, action: #selector(segmentControlChanged), for: .valueChanged)
+        view.addSubview(segmentControl)
+        segmentControl.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(8)
+            make.left.equalTo(view.safeAreaLayoutGuide).offset(8)
+            make.right.equalTo(view.safeAreaLayoutGuide).offset(-8)
         }
+
+        for collectionView in [eventsCollectionView, groupsCollectionView] {
+            let layout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
+            layout.scrollDirection = .vertical
+            layout.sectionInset.bottom = 30
+            layout.minimumInteritemSpacing = 0
+            layout.minimumLineSpacing = 0
+            collectionView.backgroundColor = .systemBackground
+            collectionView.register(MediaCell.self, forCellWithReuseIdentifier: "MediaCell")
+            collectionView.register(GroupCell.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "GroupCell")
+            collectionView.delegate = self
+            view.addSubview(collectionView)
+            collectionView.snp.makeConstraints { make in
+                make.top.equalTo(segmentControl.snp.bottom).offset(8)
+                make.left.right.bottom.equalToSuperview()
+            }
+        }
+        
+        eventsDataSource = .init(collectionView: eventsCollectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MediaCell", for: indexPath) as! MediaCell
+            cell.media = itemIdentifier
+            // TODO: actually hide remove cells if in meta group
+            cell.reduceVisibilityIfInMetaGroup = true
+            return cell
+        })
+        eventsDataSource.supplementaryViewProvider = { collectionView, _, indexPath in
+            let cell = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "GroupCell", for: indexPath) as! GroupCell
+            cell.group = self.eventsDataSource.snapshot().sectionIdentifiers[indexPath.section]
+            cell.delegate = self
+            return cell
+        }
+        
+        groupsDataSource = .init(collectionView: groupsCollectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MediaCell", for: indexPath) as! MediaCell
+            cell.media = itemIdentifier
+            cell.reduceVisibilityIfInMetaGroup = false
+            return cell
+        })
+        groupsDataSource.supplementaryViewProvider = { collectionView, _, indexPath in
+            let cell = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "GroupCell", for: indexPath) as! GroupCell
+            cell.group = self.groupsDataSource.snapshot().sectionIdentifiers[indexPath.section]
+            cell.delegate = self
+            return cell
+        }
+
+        MediasManager.shared.events.addObserver(ref: self, callNow: true) { _, new in
+            self.eventsDataSource.apply(.init(new))
+            self.updateNavBar()
+        }
+        MediasManager.shared.metaGroups.addObserver(ref: self, callNow: true) { _, new in
+            self.groupsDataSource.apply(.init(new))
+            self.updateNavBar()
+        }
+
+        PHPhotoLibrary.shared().register(self)
+        segmentControlChanged()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if groups.isEmpty {
+        if eventsDataSource.snapshot().sectionIdentifiers.isEmpty {
             loadGroups()
         }
     }
 
     // MARK: Properties
-    private var groups: [Group] = [] {
-        didSet {
-            let biggestGroups = groups.sorted().reversed().prefix(10)
-            let actions: [UIMenuElement] = biggestGroups.map { group in
-                UIAction(title: group.description) { [weak self] _ in
-                    self?.scrollToGroup(group)
-                }
-            }
-            navigationItem.rightBarButtonItem?.menu = UIMenu(children: actions)
-        }
-    }
+    private var ignoreLibraryChanges: Bool = false
+    private var eventsDataSource: UICollectionViewDiffableDataSource<EventGroup, Media>!
+    private var groupsDataSource: UICollectionViewDiffableDataSource<MetaGroup, Media>!
 
     // MARK: Views
-    private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
-    private var collectionViewLayout: UICollectionViewFlowLayout {
-        return collectionView.collectionViewLayout as! UICollectionViewFlowLayout
+    private let segmentControl = UISegmentedControl()
+    private let eventsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    private let groupsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    private var visibleCollectionView: UICollectionView {
+        return segmentControl.selectedSegmentIndex == 0 ? eventsCollectionView : groupsCollectionView
     }
-    
+
     // MARK: Actions
     private func loadGroups() {
         SVProgressHUD.show()
-        MediasManager.shared.groupedImages(progress: { progress in
+        MediasManager.shared.reloadEvents(progress: { progress in
             SVProgressHUD.showProgress(progress)
         }).andThen { result in
             SVProgressHUD.dismiss()
-        }.onSuccess { groups in
-            self.groups = groups
-            self.collectionView.reloadData()
         }.onFailure { error in
             let alert = UIAlertController(title: error.localizedDescription, message: nil, preferredStyle: .alert)
             error.recoveryOptions.enumerated().forEach { option in
@@ -79,106 +123,214 @@ class ViewController: UIViewController {
             self.present(alert, animated: true, completion: nil)
         }
     }
-    
-    private func scrollToGroup(_ group: Group) {
-        guard let index = groups.firstIndex(of: group) else { return }
-        let indexPath = IndexPath(item: 0, section: index)
-        guard let attributes = collectionViewLayout.layoutAttributesForSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, at: indexPath) else { return }
-        collectionView.setContentOffset(CGPoint(x: 0, y: attributes.frame.origin.y - collectionView.adjustedContentInset.top), animated: true)
-    }
-}
 
-extension ViewController: GroupCellDelegate {
-    func groupCell(_ groupCell: GroupCell, tappedShareOn group: Group) {
+    @objc private func segmentControlChanged() {
+        eventsCollectionView.isHidden = segmentControl.selectedSegmentIndex != 0
+        groupsCollectionView.isHidden = segmentControl.selectedSegmentIndex != 1
+    }
+
+    private func scrollToEventGroup(_ group: Groupable) {
+        let scrollFunction = { (collectionView: UICollectionView, section: Int) in
+            let indexPath = IndexPath(item: 0, section: section)
+            guard let attributes = collectionView.collectionViewLayout.layoutAttributesForSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, at: indexPath) else { return }
+            collectionView.setContentOffset(CGPoint(x: 0, y: attributes.frame.origin.y - collectionView.adjustedContentInset.top), animated: true)
+        }
+        
+        if let group = group as? EventGroup, segmentControl.selectedSegmentIndex == 0, let index = eventsDataSource.snapshot().indexOfSection(group) {
+            scrollFunction(eventsCollectionView, index)
+        }
+        if let group = group as? MetaGroup, segmentControl.selectedSegmentIndex == 1, let index = groupsDataSource.snapshot().indexOfSection(group) {
+            scrollFunction(groupsCollectionView, index)
+        }
+    }
+    
+    private func addMediasToGroup(_ medias: [Media]) {
+        let vc = UIAlertController(title: "Which group?", message: nil, preferredStyle: .actionSheet)
+        MediasManager.shared.metaGroups.value.forEach { group in
+            vc.addAction(UIAlertAction(title: group.title, style: .default, handler: { _ in
+                self.add(medias: medias, to: group)
+            }))
+        }
+        vc.addAction(UIAlertAction(title: "New group...", style: .default, handler: { _ in
+            let newGroupVC = UIAlertController(title: "Enter a group name", message: nil, preferredStyle: .alert)
+            newGroupVC.addTextField { field in
+                field.placeholder = "Name"
+            }
+            newGroupVC.addAction(UIAlertAction(title: "Create", style: .default, handler: { _ in
+                let group = MetaGroup(title: newGroupVC.textFields?.first?.text ?? "Group")
+                self.add(medias: medias, to: group)
+            }))
+            newGroupVC.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            self.present(newGroupVC, animated: true, completion: nil)
+        }))
+        vc.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        present(vc, animated: true, completion: nil)
+    }
+    
+    private func add(medias: [Media], to group: MetaGroup) {
+        guard let groupIndex = MediasManager.shared.metaGroups.value.firstIndex(of: group) else {
+            MediasManager.shared.metaGroups.value.append(group)
+            add(medias: medias, to: group)
+            return
+        }
+
+        let mediasToAdd = medias.filter { !MediasManager.shared.isInMetaGroup(media: $0) }
+        guard mediasToAdd.isNotEmpty else { return }
+        
+        MediasManager.shared.metaGroups.value[groupIndex].add(medias: mediasToAdd)
+    }
+    
+    private func share(medias: [Media]) {
         SVProgressHUD.show()
         
-        group.medias
+        medias
             .map { $0.obtainExportURL() }
             .sequence()
             .onSuccess { items in
                 SVProgressHUD.dismiss()
                 let shareVC = UIActivityViewController(activityItems: Array(items.joined()), applicationActivities: nil)
-                shareVC.completionWithItemsHandler = { activityType, completed, _, activityError in
-                    if let activityError = activityError {
-                        print("Error:", activityError)
-                    }
-                }
                 self.present(shareVC, animated: true, completion: {  SVProgressHUD.dismiss() })
             }
     }
     
-    func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: Group) {
-        guard let index = groups.firstIndex(of: group), index > 0 else { return }
-        let prevGroup = groups[index - 1]
-
-        collectionView.performBatchUpdates({
-            let newGroup = Group(medias: prevGroup.medias + group.medias)
-            groups.remove(at: index)
-            groups.remove(at: index - 1)
-            groups.insert(newGroup, at: index - 1)
-            collectionView.reloadSections(IndexSet(integer: index - 1))
-            collectionView.deleteSections(IndexSet(integer: index))
-        }, completion: nil)
-    }
-    
-    func groupCell(_ groupCell: GroupCell, tappedDeleteOn group: Group) {
-        guard let index = groups.firstIndex(of: group) else { return }
-
+    private func delete(medias: [Media]) {
+        ignoreLibraryChanges = true
         PHPhotoLibrary.shared().performChanges {
-            let assets = group.medias.map(\.asset)
+            let assets = medias.map(\.asset)
             PHAssetChangeRequest.deleteAssets(assets as NSArray)
         } completionHandler: { success, error in
             DispatchQueue.main.async {
                 if success {
-                    self.collectionView.performBatchUpdates({
-                        self.groups.remove(at: index)
-                        self.collectionView.deleteSections(IndexSet(integer: index))
-                    }, completion: nil)
+                    self.loadGroups()
                 }
+                else {
+                    self.ignoreLibraryChanges = false
+                }
+            }
+        }
+    }
+    
+    // MARK: Content
+    private func updateNavBar() {
+        let groups: [Groupable]
+        let biggestGroups: [Groupable]
+        if segmentControl.selectedSegmentIndex == 0 {
+            groups = eventsDataSource.snapshot().sectionIdentifiers
+            biggestGroups = Array(eventsDataSource.snapshot().sectionIdentifiers.sorted().reversed().prefix(20))
+        }
+        else {
+            groups = groupsDataSource.snapshot().sectionIdentifiers
+            biggestGroups = Array(groupsDataSource.snapshot().sectionIdentifiers.sorted().reversed().prefix(20))
+        }
+
+        let actions: [UIMenuElement] = biggestGroups.map { group in
+            UIAction(title: [group.title, group.details].joined(separator: "\n")) { [weak self] _ in
+                self?.scrollToEventGroup(group)
+            }
+        }
+        navigationItem.rightBarButtonItem?.menu = UIMenu(children: actions)
+        title = EventGroup(medias: Array(groups.map(\.medias).joined())).details
+    }
+}
+
+extension ViewController: PHPhotoLibraryChangeObserver {
+    func photoLibraryDidChange(_ changeInstance: PHChange) {
+        if !ignoreLibraryChanges {
+            DispatchQueue.main.async {
+                self.loadGroups()
             }
         }
     }
 }
 
-extension ViewController: UICollectionViewDataSource {
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return groups.count
+extension ViewController: GroupCellDelegate {
+    func groupCell(_ groupCell: GroupCell, tappedShareOn group: Groupable) {
+        share(medias: group.medias)
     }
     
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return groups[section].medias.count
+    func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: EventGroup) {
+        var updatedGroups = MediasManager.shared.events.value
+        guard let index = updatedGroups.firstIndex(of: group), index > 0 else { return }
+
+        updatedGroups[index - 1].merge(withNextGroup: updatedGroups[index])
+        updatedGroups.remove(at: index)
+        MediasManager.shared.events.value = updatedGroups
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MediaCell", for: indexPath) as! MediaCell
-        cell.media = groups[indexPath.section].medias[indexPath.item]
-        return cell
+    func groupCell(_ groupCell: GroupCell, tappedResplitOn group: EventGroup) {
+        var updatedGroups = MediasManager.shared.events.value
+        guard let index = updatedGroups.firstIndex(of: group) else { return }
+
+        // TODO: fix this
+        print("GROUP", group)
+        PrefsManager.shared.unlink(group: group)
+        
+        updatedGroups.remove(at: index)
+        EventGroup.group(medias: group.medias).reversed().forEach {
+            print("ADDING NEW GROUP")
+            updatedGroups.insert($0, at: index)
+        }
+        print("finished new groups")
+        MediasManager.shared.events.value = updatedGroups
     }
     
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let cell = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "GroupCell", for: indexPath) as! GroupCell
-        cell.group = groups[indexPath.section]
-        cell.delegate = self
-        return cell
+    func groupCell(_ groupCell: GroupCell, tappedAddToGroupOn group: EventGroup) {
+        addMediasToGroup(group.medias)
+    }
+    
+    func groupCell(_ groupCell: GroupCell, tappedDeleteOn group: Groupable) {
+        delete(medias: group.medias)
     }
 }
 
 extension ViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let availableWidth = collectionView.bounds.inset(by: collectionView.adjustedContentInset).width
-        let width = (availableWidth / CGFloat(5)).rounded(.down)
+        let itemsCount = (availableWidth / 70).rounded(.down)
+        let width = (availableWidth / itemsCount).rounded(.down)
         return CGSize(width: width, height: width)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         let availableWidth = collectionView.bounds.inset(by: collectionView.adjustedContentInset).width
-        return CGSize(width: availableWidth, height: 50)
+        return CGSize(width: availableWidth, height: 60)
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let vc = MediaViewController()
-        vc.media = groups[indexPath.section].medias[indexPath.item]
-        present(UINavigationController(rootViewController: vc), animated: true, completion: nil)
+        guard let header = collectionView.supplementaryView(forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(item: 0, section: indexPath.section)) as? GroupCell else { return }
+
+        let vc = MediasViewController()
+        vc.medias = header.group?.medias ?? []
+        vc.initialIndex = indexPath.item
+        vc.animationViews = collectionView.visibleCells
+            .compactMap { $0 as? MediaCell }
+            .filter { $0.media != nil }
+            .reduce(into: [:], { $0[$1.media!] = $1 })
+        present(vc, animated: true, completion: nil)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? MediaCell, let media = cell.media else { return nil }
+        let canAddToGroup = collectionView == eventsCollectionView
+        
+        var actions = [UIAction]()
+        actions.append(UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
+            self?.share(medias: [media])
+        })
+        if canAddToGroup, !MediasManager.shared.isInMetaGroup(media: media) {
+            actions.append(UIAction(title: "Add to group", image: UIImage(systemName: "folder")) { [weak self] _ in
+                self?.addMediasToGroup([media])
+            })
+        }
+        actions.append(UIAction(title: "Delete", image: UIImage(systemName: "trash")) { [weak self] _ in
+            self?.delete(medias: [media])
+        })
+
+        let actionProvider: UIContextMenuActionProvider = { _ in
+            return UIMenu(title: media.filename, children: actions)
+        }
+
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: actionProvider)
     }
 }
 

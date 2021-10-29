@@ -12,8 +12,41 @@ class MediasManager {
 
     // MARK: Init
     static let shared = MediasManager()
-    private init() { }
+    private init() {
+        events = .init(initial: [])
+        metaGroups = .init(initial: UserDefaults.standard.codableValue([MetaGroup].self, for: "meta_groups") ?? [])
+        metaGroupsMediaIDs = Set(metaGroups.value.map(\.mediaIDs).joined())
+    }
     
+    // MARK: Events
+    var events: ObservedObject<[EventGroup]>
+    
+    private var currentReload: Future<(), AppError>?
+    func reloadEvents(progress: ((Float) -> ())?) -> Future<(), AppError> {
+        if let currentReload = currentReload {
+            return currentReload
+        }
+        
+        let future = eventGroups(progress: progress)
+            .andThen { _ in self.currentReload = nil }
+            .map { (groups: [EventGroup]) -> () in self.events.value = groups }
+        currentReload = future
+        return future
+    }
+    
+    // MARK: MetaGroups
+    var metaGroups: ObservedObject<[MetaGroup]> {
+        didSet {
+            metaGroupsMediaIDs = Set(metaGroups.value.map(\.mediaIDs).joined())
+            UserDefaults.standard.setCodable(metaGroups.value, for: "meta_groups")
+        }
+    }
+    private var metaGroupsMediaIDs: Set<String> = []
+    
+    func isInMetaGroup(media: Media) -> Bool {
+        return metaGroupsMediaIDs.contains(media.asset.localIdentifier)
+    }
+
     // MARK: Permissions
     private func askPermission() -> Future<(), AppError> {
         let status = PHPhotoLibrary.authorizationStatus()
@@ -32,7 +65,7 @@ class MediasManager {
         }
     }
     
-    // MARK: Content
+    // MARK: Internal Library
     private func obtainImages() -> Future<[PHAsset], AppError> {
         return Future.init { resolver in
             DispatchQueue.global(qos: .userInitiated).async {
@@ -47,10 +80,10 @@ class MediasManager {
         }
     }
     
-    func groupedImages(progress progressClosure: ((Float) -> ())?) -> Future<[Group], AppError> {
+    private func eventGroups(progress progressClosure: ((Float) -> ())?) -> Future<[EventGroup], AppError> {
         return askPermission()
             .flatMap { self.obtainImages() }
-            .flatMap { (assets: [PHAsset]) -> Future<[Group], AppError> in
+            .flatMap { (assets: [PHAsset]) -> Future<[EventGroup], AppError> in
                 Future.init { resolver in
                     DispatchQueue.global(qos: .userInitiated).async {
                         var progress: Float = 0 {
@@ -67,12 +100,21 @@ class MediasManager {
                             progress = Float($0.offset) / Float(assets.count)
                             return Media(asset: $0.element)
                         }
-                        CacheManager.shared.cacheFileSizes(from: medias)
-
-                        let groups = Group.group(medias: medias)
+                        PrefsManager.shared.cacheFileSizes(from: medias)
+                        
+                        let groups = EventGroup.group(medias: medias)
                         resolver(.success(groups))
                     }
                 }
             }
+    }
+    
+    func medias(in group: MetaGroup) -> [Media] {
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: group.mediaIDs, options: nil)
+
+        var assets = [PHAsset]()
+        assets.reserveCapacity(result.count)
+        result.enumerateObjects { asset, _, _ in assets.append(asset) }
+        return assets.compactMap { Media(asset: $0) }
     }
 }

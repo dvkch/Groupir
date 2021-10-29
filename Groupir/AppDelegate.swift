@@ -7,15 +7,13 @@
 
 import UIKit
 
-// TODO: add option to merge groups, and retain the information
-// TODO: add option to delete/share a single item
-// TODO: refresh after changes
-
+// TODO: state restoration pour revenir sur l'album où on était avant que l'appli se quitte
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        TempURL.cleanup()
         return true
     }
 

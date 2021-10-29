@@ -9,6 +9,8 @@ import UIKit
 import Photos
 
 class ExportableMedia: NSObject {
+    
+    // MARK: Init
     init(asset: PHAsset, resource: PHAssetResource, originalResource: PHAssetResource?) {
         self.asset = asset
         self.resource = resource
@@ -16,21 +18,27 @@ class ExportableMedia: NSObject {
         super.init()
     }
     
+    // MARK: Properties
     private let asset: PHAsset
-    private let resource: PHAssetResource
+    let resource: PHAssetResource
     private let originalResource: PHAssetResource?
-}
 
-extension ExportableMedia: UIActivityItemSource {
-    func ExportableMedia(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
-        return resource.uniformTypeIdentifier
-    }
-    
-    func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+    // MARK: Computed properties
+    var filename: String {
         if let url = resource.sy_privateFileURL, let originalUrl = originalResource?.sy_privateFileURL {
             return originalUrl.deletingPathExtension().appendingPathExtension(url.pathExtension).lastPathComponent
         }
         return originalResource?.originalFilename ?? resource.originalFilename
+     }
+}
+
+extension ExportableMedia: UIActivityItemSource {
+    func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
+        return resource.uniformTypeIdentifier
+    }
+    
+    func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+        return filename
     }
 
     func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {

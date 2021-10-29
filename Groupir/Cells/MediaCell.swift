@@ -45,6 +45,11 @@ class MediaCell: UICollectionViewCell {
             updateContent()
         }
     }
+    var reduceVisibilityIfInMetaGroup: Bool = false {
+        didSet {
+            updateVisibility()
+        }
+    }
     private var mediaRequestID: PHImageRequestID?
     
     // MARK: Views
@@ -60,13 +65,24 @@ class MediaCell: UICollectionViewCell {
         }
         mediaRequestID = nil
     }
+    
+    private func updateVisibility() {
+        if reduceVisibilityIfInMetaGroup, let media = self.media, MediasManager.shared.isInMetaGroup(media: media) {
+            contentView.alpha = 0.2
+        }
+        else {
+            contentView.alpha = 1
+        }
+    }
 
     private func updateContent() {
         guard let media = media else {
             imageView.image = nil
             return
         }
-        
+
+        updateVisibility()
+
         switch media.asset.mediaType {
         case .image:
             kindImageView.image = nil
@@ -90,7 +106,9 @@ class MediaCell: UICollectionViewCell {
         options.isNetworkAccessAllowed = false
         options.deliveryMode = .fastFormat
         options.resizeMode = .fast
-        mediaRequestID = PHImageManager.default().requestImage(for: media.asset, targetSize: imageView.bounds.size, contentMode: .aspectFill, options: options) { [weak self] (image, _) in
+        
+        let size = CGSize(width: imageView.bounds.width * UIScreen.main.scale, height: imageView.bounds.height * UIScreen.main.scale)
+        mediaRequestID = PHImageManager.default().requestImage(for: media.asset, targetSize: size, contentMode: .aspectFill, options: options) { [weak self] (image, _) in
             guard self?.media == media else { return }
             if #available(iOS 15.0, *) {
                 self?.imageView.image = image?.preparingForDisplay()

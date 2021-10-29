@@ -2,61 +2,58 @@
 //  Group.swift
 //  Groupir
 //
-//  Created by Stanislas Chevallier on 21/10/2021.
+//  Created by Stanislas Chevallier on 24/10/2021.
 //
 
 import Foundation
+import QuickLook
 
-struct Group: Equatable {
-    // MARK: Init
-    fileprivate(set) var medias: [Media] = []
+protocol Groupable: CustomStringConvertible {
+    var uniqueID: String { get }
+    var title: String { get }
+    var medias: [Media] { get }
+    var mediaIDs: [String] { get }
+    var size: UInt64 { get }
+
+    mutating func remove(medias: [Media])
+}
+
+extension Groupable {
     var size: UInt64 {
         return medias.map(\.size).reduce(0, +)
     }
+    
+    var details: String {
+        return "\(medias.count) medias, \(GroupSizeFormatter.string(fromByteCount: Int64(size)))"
+    }
+    
+    func contains(anyMediaIn medias: [Media]) -> Bool {
+        return Set(self.mediaIDs).intersection(Set(medias.map(\.asset).map(\.localIdentifier))).isNotEmpty
+    }
 
-    // MARK: Formatters
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .none
-        formatter.timeZone = TimeZone.autoupdatingCurrent
-        return formatter
-    }()
-
-    private static let sizeFormatter: ByteCountFormatter = {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .binary
-        return formatter
-    }()
+    var description: String {
+        return "\(type(of: self)): \(details)"
+    }
 }
 
-extension Group: Comparable {
-    static func < (lhs: Group, rhs: Group) -> Bool {
+protocol Group: Groupable, Hashable, Comparable { }
+
+extension Group {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(uniqueID.hashValue)
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.uniqueID == rhs.uniqueID
+    }
+
+    static func < (lhs: Self, rhs: Self) -> Bool {
         return lhs.size < rhs.size
     }
 }
 
-extension Group: CustomStringConvertible {
-    var description: String {
-        "\(Group.dateFormatter.string(from: medias.first!.date)), \(medias.count) medias, \(Group.sizeFormatter.string(fromByteCount: Int64(size)))"
-    }
-}
-
-extension Group {
-    static func group(medias: [Media]) -> [Group] {
-        var groups: [Group] = []
-        medias.sorted().forEachWithPrevious { media, prevMedia in
-            guard let prevMedia = prevMedia else {
-                groups.append(Group())
-                return
-            }
-            
-            if (media.date - prevMedia.date) > 3600 {
-                groups.append(Group())
-            }
-            
-            groups[groups.count - 1].medias.append(media)
-        }
-        return groups
-    }
-}
+private let GroupSizeFormatter: ByteCountFormatter = {
+    let formatter = ByteCountFormatter()
+    formatter.countStyle = .binary
+    return formatter
+}()

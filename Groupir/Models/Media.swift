@@ -8,6 +8,7 @@
 import Foundation
 import Photos
 import BrightFutures
+import QuickLook
 
 class Media {
     // MARK: Init
@@ -17,12 +18,12 @@ class Media {
         self.asset = asset
         self.date = date
         
-        if let size = CacheManager.shared.fileSizes[asset.localIdentifier] {
+        if let size = PrefsManager.shared.cachedFileSizes[asset.localIdentifier] {
             self.size = size
         }
         else {
             self.size = 0
-            self.size = resources.compactMap { $0.value(forKey: "fileSize") as? CLong }.compactMap { UInt64($0) }.reduce(0, +)
+            self.size = resources.map(\.sy_fileSize).reduce(0, +)
         }
     }
     
@@ -30,6 +31,9 @@ class Media {
     let asset: PHAsset
     let date: Date
     private(set) var size: UInt64
+    var filename: String {
+        return exportableResources.first!.filename
+    }
 
     // MARK: Resources
     private var loadedResources: [PHAssetResource]?
@@ -39,7 +43,7 @@ class Media {
         return loadedResources!
     }
 
-    private var exportableMedias: [ExportableMedia] {
+    var exportableResources: [ExportableMedia] {
         var resources = self.resources
             .filter { !$0.type.isUnknown } // remove unknown kinds, usually AAE files
             .filter { $0.type != .adjustmentData } // remove adjustment files
@@ -100,8 +104,12 @@ class Media {
 
     func obtainExportURL(allowRetry: Bool = true) -> Future<[ExportableMedia], AppError> {
         return Future.init { resolver in
-            resolver(.success(exportableMedias))
+            resolver(.success(exportableResources))
         }
+    }
+    
+    var mediaPreviewItem: MediaPreviewItem {
+        return MediaPreviewItem(media: self)
     }
 }
 
@@ -114,5 +122,11 @@ extension Media: Equatable {
 extension Media: Comparable {
     static func < (lhs: Media, rhs: Media) -> Bool {
         return lhs.date < rhs.date
+    }
+}
+
+extension Media: Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(asset.localIdentifier)
     }
 }

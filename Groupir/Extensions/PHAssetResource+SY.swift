@@ -11,5 +11,10 @@ extension PHAssetResource {
     var sy_privateFileURL: URL? {
         return value(forKey: "privateFileURL") as? URL
     }
+    
+    var sy_fileSize: UInt64 {
+        guard let size = value(forKey: "fileSize") as? CLong else { return 0 }
+        return UInt64(size)
+    }
 }
 

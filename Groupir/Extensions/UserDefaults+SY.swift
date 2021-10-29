@@ -16,7 +16,7 @@ extension UserDefaults {
             return try decoder.decode(type, from: data)
         }
         catch {
-            print("Couldn't decode value for key '\(key)':", error)
+            Logger.e(.codable, "Couldn't decode value for key '\(key)': \(error)")
             return nil
         }
     }
@@ -33,7 +33,7 @@ extension UserDefaults {
             set(data, forKey: key)
         }
         catch {
-            print("Coudln't encode value for key '\(key)':", error)
+            Logger.e(.codable, "Couldn't encode value for key '\(key)': \(error)")
         }
     }
 }
