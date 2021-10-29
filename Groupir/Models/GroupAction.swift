@@ -8,13 +8,14 @@
 import UIKit
 
 enum GroupAction: CaseIterable {
-    case mergeWithPrevious, splitByDate, addToAlbum, share, delete
+    case mergeWithPrevious, splitByDate, addToAlbum, removeAlbum, share, delete
     
     var title: String {
         switch self {
         case .mergeWithPrevious:    return "Merge with previous group"
         case .splitByDate:          return "Split by date"
         case .addToAlbum:           return "Add all to album..."
+        case .removeAlbum:          return "Put back in events"
         case .share:                return "Share"
         case .delete:               return "Delete"
         }
@@ -25,6 +26,7 @@ enum GroupAction: CaseIterable {
         case .mergeWithPrevious:    return "arrow.triangle.merge"
         case .splitByDate:          return "arrow.triangle.branch"
         case .addToAlbum:           return "folder.badge.plus"
+        case .removeAlbum:          return "folder.badge.minus"
         case .share:                return "square.and.arrow.up"
         case .delete:               return "trash"
         }
@@ -39,6 +41,7 @@ enum GroupAction: CaseIterable {
         case .mergeWithPrevious:    return group is Event
         case .splitByDate:          return group is Event
         case .addToAlbum:           return group is Event
+        case .removeAlbum:          return group is Album
         case .share:                return true
         case .delete:               return true
         }

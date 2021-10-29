@@ -12,6 +12,7 @@ protocol GroupCellDelegate: NSObjectProtocol {
     func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: Event)
     func groupCell(_ groupCell: GroupCell, tappedResplitOn group: Event)
     func groupCell(_ groupCell: GroupCell, tappedAddToGroupOn group: Event)
+    func groupCell(_ groupCell: GroupCell, tappedRemoveGroup group: Album)
     func groupCell(_ groupCell: GroupCell, tappedDeleteOn group: Groupable)
 }
 
@@ -71,6 +72,7 @@ class GroupCell: UICollectionReusableView {
                 case .mergeWithPrevious:    self.delegate?.groupCell(self, tappedMergeWithPreviousOn: group as! Event)
                 case .splitByDate:          self.delegate?.groupCell(self, tappedResplitOn: group as! Event)
                 case .addToAlbum:           self.delegate?.groupCell(self, tappedAddToGroupOn: group as! Event)
+                case .removeAlbum:          self.delegate?.groupCell(self, tappedRemoveGroup: group as! Album)
                 case .share:                self.delegate?.groupCell(self, tappedShareOn: group)
                 case .delete:               self.delegate?.groupCell(self, tappedDeleteOn: group)
                 }

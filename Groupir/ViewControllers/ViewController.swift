@@ -21,7 +21,7 @@ class ViewController: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Biggest", image: nil, primaryAction: nil, menu: nil)
 
         segmentControl.insertSegment(withTitle: "Events", at: 0, animated: false)
-        segmentControl.insertSegment(withTitle: "Groups", at: 1, animated: false)
+        segmentControl.insertSegment(withTitle: "Albums", at: 1, animated: false)
         segmentControl.selectedSegmentIndex = 0
         segmentControl.addTarget(self, action: #selector(segmentControlChanged), for: .valueChanged)
         view.addSubview(segmentControl)
@@ -283,8 +283,6 @@ extension ViewController: GroupCellDelegate {
         updatedGroups[index - 1].merge(withNextGroup: updatedGroups[index])
         updatedGroups.remove(at: index)
         MediasManager.shared.events.value = updatedGroups
-        
-        // TODO: fix headers not updating properly
     }
     
     func groupCell(_ groupCell: GroupCell, tappedResplitOn group: Event) {
@@ -299,6 +297,10 @@ extension ViewController: GroupCellDelegate {
             updatedGroups.insert($0, at: index)
         }
         MediasManager.shared.events.value = updatedGroups
+    }
+    
+    func groupCell(_ groupCell: GroupCell, tappedRemoveGroup group: Album) {
+        removeMediasFromAlbums(group.medias)
     }
     
     func groupCell(_ groupCell: GroupCell, tappedAddToGroupOn group: Event) {
