@@ -27,10 +27,10 @@
 		979DBD16272B6F970081339A /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 979DBD15272B6F970081339A /* Logger.swift */; };
 		97CFC3A32724EBA30064FA6D /* LinkedMedias.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CFC3A22724EBA30064FA6D /* LinkedMedias.swift */; };
 		97CFC3A52724F6990064FA6D /* MediasViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CFC3A42724F6990064FA6D /* MediasViewController.swift */; };
-		97D5DD1D272585B800352F0C /* MetaGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D5DD1C272585B800352F0C /* MetaGroup.swift */; };
+		97D5DD1D272585B800352F0C /* Album.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D5DD1C272585B800352F0C /* Album.swift */; };
 		97D5DD1F2725870E00352F0C /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D5DD1E2725870E00352F0C /* Group.swift */; };
 		97F9DB552721816700A7DCC3 /* Media.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB542721816700A7DCC3 /* Media.swift */; };
-		97F9DB572721817900A7DCC3 /* EventGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB562721817900A7DCC3 /* EventGroup.swift */; };
+		97F9DB572721817900A7DCC3 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB562721817900A7DCC3 /* Event.swift */; };
 		97F9DB5A272182D600A7DCC3 /* Array+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB59272182D600A7DCC3 /* Array+SY.swift */; };
 		97F9DB5C2721849800A7DCC3 /* Date+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB5B2721849800A7DCC3 /* Date+SY.swift */; };
 		97F9DB5E2721854400A7DCC3 /* MediasManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB5D2721854400A7DCC3 /* MediasManager.swift */; };
@@ -63,10 +63,10 @@
 		979DBD15272B6F970081339A /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		97CFC3A22724EBA30064FA6D /* LinkedMedias.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedMedias.swift; sourceTree = "<group>"; };
 		97CFC3A42724F6990064FA6D /* MediasViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediasViewController.swift; sourceTree = "<group>"; };
-		97D5DD1C272585B800352F0C /* MetaGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaGroup.swift; sourceTree = "<group>"; };
+		97D5DD1C272585B800352F0C /* Album.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Album.swift; sourceTree = "<group>"; };
 		97D5DD1E2725870E00352F0C /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		97F9DB542721816700A7DCC3 /* Media.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Media.swift; sourceTree = "<group>"; };
-		97F9DB562721817900A7DCC3 /* EventGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventGroup.swift; sourceTree = "<group>"; };
+		97F9DB562721817900A7DCC3 /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
 		97F9DB59272182D600A7DCC3 /* Array+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+SY.swift"; sourceTree = "<group>"; };
 		97F9DB5B2721849800A7DCC3 /* Date+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+SY.swift"; sourceTree = "<group>"; };
 		97F9DB5D2721854400A7DCC3 /* MediasManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediasManager.swift; sourceTree = "<group>"; };
@@ -143,16 +143,16 @@
 		97F9DB522721812F00A7DCC3 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				97D5DD1C272585B800352F0C /* Album.swift */,
 				97F9DB5F272185DE00A7DCC3 /* AppError.swift */,
-				97F9DB562721817900A7DCC3 /* EventGroup.swift */,
+				97F9DB562721817900A7DCC3 /* Event.swift */,
 				975CF38127242EB800F23511 /* ExportableMedia.swift */,
 				97D5DD1E2725870E00352F0C /* Group.swift */,
 				97CFC3A22724EBA30064FA6D /* LinkedMedias.swift */,
 				97F9DB542721816700A7DCC3 /* Media.swift */,
-				97D5DD1C272585B800352F0C /* MetaGroup.swift */,
+				979DBD11272B63EC0081339A /* MediaPreviewItem.swift */,
 				979DBD0B272B3FF30081339A /* ObservedObject.swift */,
 				979DBD0F272B5E750081339A /* TempURL.swift */,
-				979DBD11272B63EC0081339A /* MediaPreviewItem.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -339,7 +339,7 @@
 				975D84202722D7D0004B6D63 /* PrefsManager.swift in Sources */,
 				979DBD16272B6F970081339A /* Logger.swift in Sources */,
 				979DBD0A272B38690081339A /* UICollectionViewDiffableDataSource+SY.swift in Sources */,
-				97D5DD1D272585B800352F0C /* MetaGroup.swift in Sources */,
+				97D5DD1D272585B800352F0C /* Album.swift in Sources */,
 				97F9DB552721816700A7DCC3 /* Media.swift in Sources */,
 				9746DF16272451D800F01B36 /* PHAssetResource+SY.swift in Sources */,
 				9753403B27217F960079F537 /* ViewController.swift in Sources */,
@@ -352,7 +352,7 @@
 				97CFC3A52724F6990064FA6D /* MediasViewController.swift in Sources */,
 				975D84222722D813004B6D63 /* UserDefaults+SY.swift in Sources */,
 				979DBD0C272B3FF30081339A /* ObservedObject.swift in Sources */,
-				97F9DB572721817900A7DCC3 /* EventGroup.swift in Sources */,
+				97F9DB572721817900A7DCC3 /* Event.swift in Sources */,
 				979DBD08272B37B30081339A /* NSDiffableDataSourceSnapshot+SY.swift in Sources */,
 				97F9DB63272189CF00A7DCC3 /* MediaCell.swift in Sources */,
 				9753403927217F960079F537 /* SceneDelegate.swift in Sources */,

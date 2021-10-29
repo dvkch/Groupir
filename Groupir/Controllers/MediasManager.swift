@@ -14,12 +14,12 @@ class MediasManager {
     static let shared = MediasManager()
     private init() {
         events = .init(initial: [])
-        metaGroups = .init(initial: UserDefaults.standard.codableValue([MetaGroup].self, for: "meta_groups") ?? [])
-        metaGroupsMediaIDs = Set(metaGroups.value.map(\.mediaIDs).joined())
+        albums = .init(initial: UserDefaults.standard.codableValue([Album].self, for: "meta_groups") ?? [])
+        albumsMediaIDs = Set(albums.value.map(\.mediaIDs).joined())
     }
     
     // MARK: Events
-    var events: ObservedObject<[EventGroup]>
+    var events: ObservedObject<[Event]>
     
     private var currentReload: Future<(), AppError>?
     func reloadEvents(progress: ((Float) -> ())?) -> Future<(), AppError> {
@@ -29,22 +29,22 @@ class MediasManager {
         
         let future = eventGroups(progress: progress)
             .andThen { _ in self.currentReload = nil }
-            .map { (groups: [EventGroup]) -> () in self.events.value = groups }
+            .map { (groups: [Event]) -> () in self.events.value = groups }
         currentReload = future
         return future
     }
     
     // MARK: MetaGroups
-    var metaGroups: ObservedObject<[MetaGroup]> {
+    var albums: ObservedObject<[Album]> {
         didSet {
-            metaGroupsMediaIDs = Set(metaGroups.value.map(\.mediaIDs).joined())
-            UserDefaults.standard.setCodable(metaGroups.value, for: "meta_groups")
+            albumsMediaIDs = Set(albums.value.map(\.mediaIDs).joined())
+            UserDefaults.standard.setCodable(albums.value, for: "meta_groups")
         }
     }
-    private var metaGroupsMediaIDs: Set<String> = []
+    private var albumsMediaIDs: Set<String> = []
     
     func isInMetaGroup(media: Media) -> Bool {
-        return metaGroupsMediaIDs.contains(media.asset.localIdentifier)
+        return albumsMediaIDs.contains(media.asset.localIdentifier)
     }
 
     // MARK: Permissions
@@ -80,10 +80,10 @@ class MediasManager {
         }
     }
     
-    private func eventGroups(progress progressClosure: ((Float) -> ())?) -> Future<[EventGroup], AppError> {
+    private func eventGroups(progress progressClosure: ((Float) -> ())?) -> Future<[Event], AppError> {
         return askPermission()
             .flatMap { self.obtainImages() }
-            .flatMap { (assets: [PHAsset]) -> Future<[EventGroup], AppError> in
+            .flatMap { (assets: [PHAsset]) -> Future<[Event], AppError> in
                 Future.init { resolver in
                     DispatchQueue.global(qos: .userInitiated).async {
                         var progress: Float = 0 {
@@ -102,14 +102,14 @@ class MediasManager {
                         }
                         PrefsManager.shared.cacheFileSizes(from: medias)
                         
-                        let groups = EventGroup.group(medias: medias)
+                        let groups = Event.group(medias: medias)
                         resolver(.success(groups))
                     }
                 }
             }
     }
     
-    func medias(in group: MetaGroup) -> [Media] {
+    func medias(in group: Album) -> [Media] {
         let result = PHAsset.fetchAssets(withLocalIdentifiers: group.mediaIDs, options: nil)
 
         var assets = [PHAsset]()

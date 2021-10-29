@@ -30,7 +30,7 @@ class ViewController: UIViewController {
             make.right.equalTo(view.safeAreaLayoutGuide).offset(-8)
         }
 
-        for collectionView in [eventsCollectionView, groupsCollectionView] {
+        for collectionView in [eventsCollectionView, albumsCollectionView] {
             let layout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
             layout.scrollDirection = .vertical
             layout.sectionInset.bottom = 30
@@ -54,22 +54,22 @@ class ViewController: UIViewController {
             cell.reduceVisibilityIfInMetaGroup = true
             return cell
         })
-        eventsDataSource.supplementaryViewProvider = { collectionView, _, indexPath in
+        eventsDataSource.setSectionHeaderProvider { collectionView, section, indexPath in
             let cell = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "GroupCell", for: indexPath) as! GroupCell
-            cell.group = self.eventsDataSource.snapshot().sectionIdentifiers[indexPath.section]
+            cell.group = section
             cell.delegate = self
             return cell
         }
         
-        groupsDataSource = .init(collectionView: groupsCollectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
+        eventsDataSource = .init(collectionView: eventsCollectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MediaCell", for: indexPath) as! MediaCell
             cell.media = itemIdentifier
             cell.reduceVisibilityIfInMetaGroup = false
             return cell
         })
-        groupsDataSource.supplementaryViewProvider = { collectionView, _, indexPath in
+        eventsDataSource.setSectionHeaderProvider { collectionView, section, indexPath in
             let cell = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "GroupCell", for: indexPath) as! GroupCell
-            cell.group = self.groupsDataSource.snapshot().sectionIdentifiers[indexPath.section]
+            cell.group = section
             cell.delegate = self
             return cell
         }
@@ -78,8 +78,8 @@ class ViewController: UIViewController {
             self.eventsDataSource.apply(.init(new))
             self.updateNavBar()
         }
-        MediasManager.shared.metaGroups.addObserver(ref: self, callNow: true) { _, new in
-            self.groupsDataSource.apply(.init(new))
+        MediasManager.shared.events.addObserver(ref: self, callNow: true) { _, new in
+            self.eventsDataSource.apply(.init(new))
             self.updateNavBar()
         }
 
@@ -96,15 +96,15 @@ class ViewController: UIViewController {
 
     // MARK: Properties
     private var ignoreLibraryChanges: Bool = false
-    private var eventsDataSource: UICollectionViewDiffableDataSource<EventGroup, Media>!
-    private var groupsDataSource: UICollectionViewDiffableDataSource<MetaGroup, Media>!
+    private var eventsDataSource: UICollectionViewDiffableDataSource<Event, Media>!
+    private var albumsDataSource: UICollectionViewDiffableDataSource<Album, Media>!
 
     // MARK: Views
     private let segmentControl = UISegmentedControl()
     private let eventsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
-    private let groupsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    private let albumsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private var visibleCollectionView: UICollectionView {
-        return segmentControl.selectedSegmentIndex == 0 ? eventsCollectionView : groupsCollectionView
+        return segmentControl.selectedSegmentIndex == 0 ? eventsCollectionView : albumsCollectionView
     }
 
     // MARK: Actions
@@ -126,7 +126,7 @@ class ViewController: UIViewController {
 
     @objc private func segmentControlChanged() {
         eventsCollectionView.isHidden = segmentControl.selectedSegmentIndex != 0
-        groupsCollectionView.isHidden = segmentControl.selectedSegmentIndex != 1
+        albumsCollectionView.isHidden = segmentControl.selectedSegmentIndex != 1
     }
 
     private func scrollToEventGroup(_ group: Groupable) {
@@ -136,17 +136,17 @@ class ViewController: UIViewController {
             collectionView.setContentOffset(CGPoint(x: 0, y: attributes.frame.origin.y - collectionView.adjustedContentInset.top), animated: true)
         }
         
-        if let group = group as? EventGroup, segmentControl.selectedSegmentIndex == 0, let index = eventsDataSource.snapshot().indexOfSection(group) {
+        if let group = group as? Event, segmentControl.selectedSegmentIndex == 0, let index = eventsDataSource.snapshot().indexOfSection(group) {
             scrollFunction(eventsCollectionView, index)
         }
-        if let group = group as? MetaGroup, segmentControl.selectedSegmentIndex == 1, let index = groupsDataSource.snapshot().indexOfSection(group) {
-            scrollFunction(groupsCollectionView, index)
+        if let group = group as? Album, segmentControl.selectedSegmentIndex == 1, let index = albumsDataSource.snapshot().indexOfSection(group) {
+            scrollFunction(albumsCollectionView, index)
         }
     }
     
     private func addMediasToGroup(_ medias: [Media]) {
         let vc = UIAlertController(title: "Which group?", message: nil, preferredStyle: .actionSheet)
-        MediasManager.shared.metaGroups.value.forEach { group in
+        MediasManager.shared.albums.value.forEach { group in
             vc.addAction(UIAlertAction(title: group.title, style: .default, handler: { _ in
                 self.add(medias: medias, to: group)
             }))
@@ -157,7 +157,7 @@ class ViewController: UIViewController {
                 field.placeholder = "Name"
             }
             newGroupVC.addAction(UIAlertAction(title: "Create", style: .default, handler: { _ in
-                let group = MetaGroup(title: newGroupVC.textFields?.first?.text ?? "Group")
+                let group = Album(title: newGroupVC.textFields?.first?.text ?? "Group")
                 self.add(medias: medias, to: group)
             }))
             newGroupVC.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -167,9 +167,9 @@ class ViewController: UIViewController {
         present(vc, animated: true, completion: nil)
     }
     
-    private func add(medias: [Media], to group: MetaGroup) {
-        guard let groupIndex = MediasManager.shared.metaGroups.value.firstIndex(of: group) else {
-            MediasManager.shared.metaGroups.value.append(group)
+    private func add(medias: [Media], to group: Album) {
+        guard let groupIndex = MediasManager.shared.albums.value.firstIndex(of: group) else {
+            MediasManager.shared.albums.value.append(group)
             add(medias: medias, to: group)
             return
         }
@@ -177,7 +177,7 @@ class ViewController: UIViewController {
         let mediasToAdd = medias.filter { !MediasManager.shared.isInMetaGroup(media: $0) }
         guard mediasToAdd.isNotEmpty else { return }
         
-        MediasManager.shared.metaGroups.value[groupIndex].add(medias: mediasToAdd)
+        MediasManager.shared.albums.value[groupIndex].add(medias: mediasToAdd)
     }
     
     private func share(medias: [Media]) {
@@ -219,8 +219,8 @@ class ViewController: UIViewController {
             biggestGroups = Array(eventsDataSource.snapshot().sectionIdentifiers.sorted().reversed().prefix(20))
         }
         else {
-            groups = groupsDataSource.snapshot().sectionIdentifiers
-            biggestGroups = Array(groupsDataSource.snapshot().sectionIdentifiers.sorted().reversed().prefix(20))
+            groups = albumsDataSource.snapshot().sectionIdentifiers
+            biggestGroups = Array(albumsDataSource.snapshot().sectionIdentifiers.sorted().reversed().prefix(20))
         }
 
         let actions: [UIMenuElement] = biggestGroups.map { group in
@@ -229,7 +229,7 @@ class ViewController: UIViewController {
             }
         }
         navigationItem.rightBarButtonItem?.menu = UIMenu(children: actions)
-        title = EventGroup(medias: Array(groups.map(\.medias).joined())).details
+        title = Event(medias: Array(groups.map(\.medias).joined())).details
     }
 }
 
@@ -248,7 +248,7 @@ extension ViewController: GroupCellDelegate {
         share(medias: group.medias)
     }
     
-    func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: EventGroup) {
+    func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: Event) {
         var updatedGroups = MediasManager.shared.events.value
         guard let index = updatedGroups.firstIndex(of: group), index > 0 else { return }
 
@@ -257,7 +257,7 @@ extension ViewController: GroupCellDelegate {
         MediasManager.shared.events.value = updatedGroups
     }
     
-    func groupCell(_ groupCell: GroupCell, tappedResplitOn group: EventGroup) {
+    func groupCell(_ groupCell: GroupCell, tappedResplitOn group: Event) {
         var updatedGroups = MediasManager.shared.events.value
         guard let index = updatedGroups.firstIndex(of: group) else { return }
 
@@ -266,7 +266,7 @@ extension ViewController: GroupCellDelegate {
         PrefsManager.shared.unlink(group: group)
         
         updatedGroups.remove(at: index)
-        EventGroup.group(medias: group.medias).reversed().forEach {
+        Event.group(medias: group.medias).reversed().forEach {
             print("ADDING NEW GROUP")
             updatedGroups.insert($0, at: index)
         }
@@ -274,7 +274,7 @@ extension ViewController: GroupCellDelegate {
         MediasManager.shared.events.value = updatedGroups
     }
     
-    func groupCell(_ groupCell: GroupCell, tappedAddToGroupOn group: EventGroup) {
+    func groupCell(_ groupCell: GroupCell, tappedAddToGroupOn group: Event) {
         addMediasToGroup(group.medias)
     }
     

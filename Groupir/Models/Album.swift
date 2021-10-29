@@ -1,5 +1,5 @@
 //
-//  MetaGroup.swift
+//  Album.swift
 //  Groupir
 //
 //  Created by Stanislas Chevallier on 24/10/2021.
@@ -8,7 +8,7 @@
 import Foundation
 import Photos
 
-struct MetaGroup: Codable {
+struct Album: Codable {
     
     // MARK: Init
     init(title: String, medias: [Media] = []) {
@@ -45,7 +45,7 @@ struct MetaGroup: Codable {
     }
 }
 
-extension MetaGroup: Group {
+extension Album: Group {
     mutating func remove(medias: [Media]) {
         let mediaIDsToRemove = Set(medias.map(\.asset).map(\.localIdentifier))
         mediaIDs.removeAll(where: { mediaIDsToRemove.contains($0) })

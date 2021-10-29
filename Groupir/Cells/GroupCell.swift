@@ -9,9 +9,9 @@ import UIKit
 
 protocol GroupCellDelegate: NSObjectProtocol {
     func groupCell(_ groupCell: GroupCell, tappedShareOn group: Groupable)
-    func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: EventGroup)
-    func groupCell(_ groupCell: GroupCell, tappedResplitOn group: EventGroup)
-    func groupCell(_ groupCell: GroupCell, tappedAddToGroupOn group: EventGroup)
+    func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: Event)
+    func groupCell(_ groupCell: GroupCell, tappedResplitOn group: Event)
+    func groupCell(_ groupCell: GroupCell, tappedAddToGroupOn group: Event)
     func groupCell(_ groupCell: GroupCell, tappedDeleteOn group: Groupable)
 }
 
@@ -70,7 +70,7 @@ class GroupCell: UICollectionReusableView {
             self.delegate?.groupCell(self, tappedShareOn: group)
         })
         
-        if let eventGroup = group as? EventGroup {
+        if let eventGroup = group as? Event {
             actions.append(UIAction(title: "Merge with previous group", image: UIImage(systemName: "arrow.triangle.merge")) { [weak self] _ in
                 guard let self = self else { return }
                 self.delegate?.groupCell(self, tappedMergeWithPreviousOn: eventGroup)

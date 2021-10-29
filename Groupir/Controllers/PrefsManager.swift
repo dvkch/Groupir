@@ -41,7 +41,7 @@ class PrefsManager {
         linkedMedias.append(LinkedMedia(mediaID1: media1.asset.localIdentifier, mediaID2: media2.asset.localIdentifier))
     }
     
-    func unlink(group: EventGroup) {
+    func unlink(group: Event) {
         group.medias.forEachWithPrevious { media, prevMedia in
             guard let prevMedia = prevMedia else { return }
             linkedMedias.removeAll(where: { $0.mediaID1 == prevMedia.asset.localIdentifier && $0.mediaID2 == media.asset.localIdentifier })
