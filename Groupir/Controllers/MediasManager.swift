@@ -34,7 +34,7 @@ class MediasManager {
         return future
     }
     
-    // MARK: MetaGroups
+    // MARK: Albums
     var albums: ObservedObject<[Album]> {
         didSet {
             albumsMediaIDs = Set(albums.value.map(\.mediaIDs).joined())
@@ -43,7 +43,7 @@ class MediasManager {
     }
     private var albumsMediaIDs: Set<String> = []
     
-    func isInMetaGroup(media: Media) -> Bool {
+    func isInAlbum(media: Media) -> Bool {
         return albumsMediaIDs.contains(media.asset.localIdentifier)
     }
 

@@ -174,7 +174,7 @@ class ViewController: UIViewController {
             return
         }
 
-        let mediasToAdd = medias.filter { !MediasManager.shared.isInMetaGroup(media: $0) }
+        let mediasToAdd = medias.filter { !MediasManager.shared.isInAlbum(media: $0) }
         guard mediasToAdd.isNotEmpty else { return }
         
         MediasManager.shared.albums.value[groupIndex].add(medias: mediasToAdd)

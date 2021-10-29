@@ -67,7 +67,7 @@ class MediaCell: UICollectionViewCell {
     }
     
     private func updateVisibility() {
-        if reduceVisibilityIfInMetaGroup, let media = self.media, MediasManager.shared.isInMetaGroup(media: media) {
+        if reduceVisibilityIfInMetaGroup, let media = self.media, MediasManager.shared.isInAlbum(media: media) {
             contentView.alpha = 0.2
         }
         else {

@@ -32,7 +32,7 @@ enum MediaAction: CaseIterable {
     
     func isAvailable(for media: Media) -> Bool {
         switch self {
-        case .addToAlbum:           return MediasManager.shared.isInMetaGroup(media: media)
+        case .addToAlbum:           return MediasManager.shared.isInAlbum(media: media)
         case .share:                return true
         case .delete:               return true
         }
