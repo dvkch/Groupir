@@ -50,8 +50,6 @@ class ViewController: UIViewController {
         eventsDataSource = .init(collectionView: eventsCollectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MediaCell", for: indexPath) as! MediaCell
             cell.media = itemIdentifier
-            // TODO: actually hide remove cells if in meta group
-            cell.reduceVisibilityIfInMetaGroup = true
             return cell
         })
         eventsDataSource.setSectionHeaderProvider { collectionView, section, indexPath in
@@ -64,7 +62,6 @@ class ViewController: UIViewController {
         albumsDataSource = .init(collectionView: albumsCollectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MediaCell", for: indexPath) as! MediaCell
             cell.media = itemIdentifier
-            cell.reduceVisibilityIfInMetaGroup = false
             return cell
         })
         albumsDataSource.setSectionHeaderProvider { collectionView, section, indexPath in
@@ -127,6 +124,7 @@ class ViewController: UIViewController {
     @objc private func segmentControlChanged() {
         eventsCollectionView.isHidden = segmentControl.selectedSegmentIndex != 0
         albumsCollectionView.isHidden = segmentControl.selectedSegmentIndex != 1
+        updateNavBar()
     }
 
     private func scrollToEventGroup(_ group: Groupable) {
@@ -167,17 +165,12 @@ class ViewController: UIViewController {
         present(vc, animated: true, completion: nil)
     }
     
-    private func add(medias: [Media], to group: Album) {
-        guard let groupIndex = MediasManager.shared.albums.value.firstIndex(of: group) else {
-            MediasManager.shared.albums.value.append(group)
-            add(medias: medias, to: group)
-            return
-        }
-
-        let mediasToAdd = medias.filter { !MediasManager.shared.isInAlbum(media: $0) }
-        guard mediasToAdd.isNotEmpty else { return }
-        
-        MediasManager.shared.albums.value[groupIndex].add(medias: mediasToAdd)
+    private func add(medias: [Media], to album: Album) {
+        MediasManager.shared.addMedias(medias, to: album)
+    }
+    
+    private func removeMediasFromAlbums(_ medias: [Media]) {
+        MediasManager.shared.removeMediasFromAlbums(medias)
     }
     
     private func share(medias: [Media]) {
@@ -324,9 +317,10 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
         let actions = MediaAction.available(for: media).map { action in
             return UIAction(title: action.title, image: action.image) { [weak self] _ in
                 switch action {
-                case .addToAlbum:   self?.addMediasToGroup([media])
-                case .share:        self?.share(medias: [media])
-                case .delete:       self?.delete(medias: [media])
+                case .addToAlbum:       self?.addMediasToGroup([media])
+                case .removeFromAblum:  self?.removeMediasFromAlbums([media])
+                case .share:            self?.share(medias: [media])
+                case .delete:           self?.delete(medias: [media])
                 }
             }
         }

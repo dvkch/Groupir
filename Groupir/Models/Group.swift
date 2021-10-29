@@ -28,7 +28,7 @@ extension Groupable {
     }
     
     func contains(anyMediaIn medias: [Media]) -> Bool {
-        return Set(self.mediaIDs).intersection(Set(medias.map(\.asset).map(\.localIdentifier))).isNotEmpty
+        return Set(self.mediaIDs).intersection(Set(medias.map(\.asset.localIdentifier))).isNotEmpty
     }
 
     var description: String {

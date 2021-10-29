@@ -14,7 +14,7 @@ struct Album: Codable {
     init(title: String, medias: [Media] = []) {
         uniqueID = UUID().uuidString
         self.title = title
-        mediaIDs = medias.sorted().map(\.asset).map(\.localIdentifier)
+        mediaIDs = medias.sorted().map(\.asset.localIdentifier)
     }
 
     init(from decoder: Decoder) throws {
@@ -41,13 +41,13 @@ struct Album: Codable {
     
     mutating func add(medias: [Media]) {
         let allMedias = self.medias + medias
-        mediaIDs = allMedias.sorted().map(\.asset).map(\.localIdentifier)
+        mediaIDs = allMedias.sorted().map(\.asset.localIdentifier)
     }
 }
 
 extension Album: Group {
     mutating func remove(medias: [Media]) {
-        let mediaIDsToRemove = Set(medias.map(\.asset).map(\.localIdentifier))
+        let mediaIDsToRemove = Set(medias.map(\.asset.localIdentifier))
         mediaIDs.removeAll(where: { mediaIDsToRemove.contains($0) })
     }
 }

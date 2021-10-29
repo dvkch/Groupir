@@ -45,11 +45,6 @@ class MediaCell: UICollectionViewCell {
             updateContent()
         }
     }
-    var reduceVisibilityIfInMetaGroup: Bool = false {
-        didSet {
-            updateVisibility()
-        }
-    }
     private var mediaRequestID: PHImageRequestID?
     
     // MARK: Views
@@ -66,22 +61,11 @@ class MediaCell: UICollectionViewCell {
         mediaRequestID = nil
     }
     
-    private func updateVisibility() {
-        if reduceVisibilityIfInMetaGroup, let media = self.media, MediasManager.shared.isInAlbum(media: media) {
-            contentView.alpha = 0.2
-        }
-        else {
-            contentView.alpha = 1
-        }
-    }
-
     private func updateContent() {
         guard let media = media else {
             imageView.image = nil
             return
         }
-
-        updateVisibility()
 
         switch media.asset.mediaType {
         case .image:

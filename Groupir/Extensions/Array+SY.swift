@@ -35,3 +35,10 @@ extension EnumeratedSequence where Base.Element: Comparable {
         return self.max(by: { $0.element < $1.element })
     }
 }
+
+extension Dictionary {
+    init(minimumCapacity: Int) {
+        self.init()
+        reserveCapacity(minimumCapacity)
+    }
+}

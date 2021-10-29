@@ -18,7 +18,7 @@ struct Event {
     }
 
     var mediaIDs: [String] {
-        medias.map(\.asset).map(\.localIdentifier)
+        medias.map(\.asset.localIdentifier)
     }
 
     // MARK: Medias

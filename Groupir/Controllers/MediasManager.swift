@@ -8,18 +8,24 @@
 import Photos
 import BrightFutures
 
-class MediasManager {
+class MediasManager: NSObject {
 
     // MARK: Init
     static let shared = MediasManager()
-    private init() {
+    private override init() {
         events = .init(initial: [])
         albums = .init(initial: UserDefaults.standard.codableValue([Album].self, for: "meta_groups") ?? [])
         albumsMediaIDs = Set(albums.value.map(\.mediaIDs).joined())
+        super.init()
+
+        albums.addObserver(ref: self) { old, new in
+            self.albumsMediaIDs = Set(new.map(\.mediaIDs).joined())
+            UserDefaults.standard.setCodable(new, for: "meta_groups")
+        }
     }
     
     // MARK: Events
-    var events: ObservedObject<[Event]>
+    let events: ObservedObject<[Event]>
     
     private var currentReload: Future<(), AppError>?
     func reloadEvents(progress: ((Float) -> ())?) -> Future<(), AppError> {
@@ -27,24 +33,42 @@ class MediasManager {
             return currentReload
         }
         
-        let future = eventGroups(progress: progress)
-            .andThen { _ in self.currentReload = nil }
-            .map { (groups: [Event]) -> () in self.events.value = groups }
+        let future = eventGroups(progress: progress).andThen { _ in self.currentReload = nil }
         currentReload = future
         return future
     }
     
     // MARK: Albums
-    var albums: ObservedObject<[Album]> {
+    let albums: ObservedObject<[Album]>
+    private var albumsMediaIDs: Set<String> = [] {
         didSet {
-            albumsMediaIDs = Set(albums.value.map(\.mediaIDs).joined())
-            UserDefaults.standard.setCodable(albums.value, for: "meta_groups")
+            guard albumsMediaIDs != oldValue else { return }
+            recomputeEvents()
         }
     }
-    private var albumsMediaIDs: Set<String> = []
     
     func isInAlbum(media: Media) -> Bool {
         return albumsMediaIDs.contains(media.asset.localIdentifier)
+    }
+    
+    func addMedias(_ medias: [Media], to album: Album) {
+        var updatedAlbums = albums.value
+        
+        if !updatedAlbums.contains(album) {
+            updatedAlbums.append(album)
+        }
+        
+        guard let index = updatedAlbums.firstIndex(of: album) else { return }
+        updatedAlbums[index].add(medias: medias)
+        self.albums.value = updatedAlbums
+    }
+
+    func removeMediasFromAlbums(_ medias: [Media]) {
+        var updatedAlbums = albums.value
+        for i in 0..<updatedAlbums.count {
+            updatedAlbums[i].remove(medias: medias)
+        }
+        self.albums.value = updatedAlbums
     }
 
     // MARK: Permissions
@@ -65,7 +89,29 @@ class MediasManager {
         }
     }
     
-    // MARK: Internal Library
+    // MARK: Library properties
+    private var assets: [PHAsset] = []
+    private var medias: [Media] = [] {
+        didSet {
+            PrefsManager.shared.cacheFileSizes(from: medias)
+            recomputeEvents()
+            reloadAlbums()
+            
+            mediasDictionary = medias.reduce(into: .init(minimumCapacity: medias.count), { $0[$1.asset.localIdentifier] = $1 })
+        }
+    }
+    private var mediasDictionary: [String: Media] = [:]
+
+    private func recomputeEvents() {
+        let visibleMedias = medias.filter { !isInAlbum(media: $0) }
+        events.value = Event.group(medias: visibleMedias)
+    }
+    
+    private func reloadAlbums() {
+        self.albums.value += [] // this will trigger a refresh
+    }
+
+    // MARK: Library methods
     private func obtainImages() -> Future<[PHAsset], AppError> {
         return Future.init { resolver in
             DispatchQueue.global(qos: .userInitiated).async {
@@ -80,10 +126,10 @@ class MediasManager {
         }
     }
     
-    private func eventGroups(progress progressClosure: ((Float) -> ())?) -> Future<[Event], AppError> {
+    private func eventGroups(progress progressClosure: ((Float) -> ())?) -> Future<(), AppError> {
         return askPermission()
             .flatMap { self.obtainImages() }
-            .flatMap { (assets: [PHAsset]) -> Future<[Event], AppError> in
+            .flatMap { (assets: [PHAsset]) -> Future<(), AppError> in
                 Future.init { resolver in
                     DispatchQueue.global(qos: .userInitiated).async {
                         var progress: Float = 0 {
@@ -96,25 +142,17 @@ class MediasManager {
                             }
                         }
 
-                        let medias: [Media] = assets.enumerated().compactMap {
+                        self.medias = assets.enumerated().compactMap {
                             progress = Float($0.offset) / Float(assets.count)
                             return Media(asset: $0.element)
                         }
-                        PrefsManager.shared.cacheFileSizes(from: medias)
-                        
-                        let groups = Event.group(medias: medias)
-                        resolver(.success(groups))
+                        resolver(.success(()))
                     }
                 }
             }
     }
     
-    func medias(in group: Album) -> [Media] {
-        let result = PHAsset.fetchAssets(withLocalIdentifiers: group.mediaIDs, options: nil)
-
-        var assets = [PHAsset]()
-        assets.reserveCapacity(result.count)
-        result.enumerateObjects { asset, _, _ in assets.append(asset) }
-        return assets.compactMap { Media(asset: $0) }
+    func medias(in album: Album) -> [Media] {
+        return album.mediaIDs.compactMap { mediasDictionary[$0] }
     }
 }

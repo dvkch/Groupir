@@ -24,7 +24,7 @@ enum GroupAction: CaseIterable {
         switch self {
         case .mergeWithPrevious:    return "arrow.triangle.merge"
         case .splitByDate:          return "arrow.triangle.branch"
-        case .addToAlbum:           return "folder"
+        case .addToAlbum:           return "folder.badge.plus"
         case .share:                return "square.and.arrow.up"
         case .delete:               return "trash"
         }
