@@ -64,31 +64,18 @@ class GroupCell: UICollectionReusableView {
         guard let group = group else { return }
         label.text = [group.title, group.details].joined(separator: ", ")
         
-        var actions = [UIAction]()
-        actions.append(UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
-            guard let self = self, let group = self.group else { return }
-            self.delegate?.groupCell(self, tappedShareOn: group)
-        })
-        
-        if let eventGroup = group as? Event {
-            actions.append(UIAction(title: "Merge with previous group", image: UIImage(systemName: "arrow.triangle.merge")) { [weak self] _ in
-                guard let self = self else { return }
-                self.delegate?.groupCell(self, tappedMergeWithPreviousOn: eventGroup)
-            })
-            actions.append(UIAction(title: "Split by date", image: UIImage(systemName: "arrow.triangle.branch")) { [weak self] _ in
-                guard let self = self else { return }
-                self.delegate?.groupCell(self, tappedResplitOn: eventGroup)
-            })
-            actions.append(UIAction(title: "Add all to group", image: UIImage(systemName: "folder")) { [weak self] _ in
-                guard let self = self else { return }
-                self.delegate?.groupCell(self, tappedAddToGroupOn: eventGroup)
-            })
+        let actions = GroupAction.available(for: group).map { action in
+            UIAction(title: action.title, image: action.image) { [weak self] _ in
+                guard let self = self, let group = self.group else { return }
+                switch action {
+                case .mergeWithPrevious:    self.delegate?.groupCell(self, tappedMergeWithPreviousOn: group as! Event)
+                case .splitByDate:          self.delegate?.groupCell(self, tappedResplitOn: group as! Event)
+                case .addToAlbum:           self.delegate?.groupCell(self, tappedAddToGroupOn: group as! Event)
+                case .share:                self.delegate?.groupCell(self, tappedShareOn: group)
+                case .delete:               self.delegate?.groupCell(self, tappedDeleteOn: group)
+                }
+            }
         }
-        
-        actions.append(UIAction(title: "Delete", image: UIImage(systemName: "trash")) { [weak self] _ in
-            guard let self = self, let group = self.group else { return }
-            self.delegate?.groupCell(self, tappedDeleteOn: group)
-        })
         shareButton.menu = UIMenu(children: actions)
     }
 }

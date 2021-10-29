@@ -61,13 +61,13 @@ class ViewController: UIViewController {
             return cell
         }
         
-        eventsDataSource = .init(collectionView: eventsCollectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
+        albumsDataSource = .init(collectionView: albumsCollectionView, cellProvider: { collectionView, indexPath, itemIdentifier in
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MediaCell", for: indexPath) as! MediaCell
             cell.media = itemIdentifier
             cell.reduceVisibilityIfInMetaGroup = false
             return cell
         })
-        eventsDataSource.setSectionHeaderProvider { collectionView, section, indexPath in
+        albumsDataSource.setSectionHeaderProvider { collectionView, section, indexPath in
             let cell = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "GroupCell", for: indexPath) as! GroupCell
             cell.group = section
             cell.delegate = self
@@ -78,8 +78,8 @@ class ViewController: UIViewController {
             self.eventsDataSource.apply(.init(new))
             self.updateNavBar()
         }
-        MediasManager.shared.events.addObserver(ref: self, callNow: true) { _, new in
-            self.eventsDataSource.apply(.init(new))
+        MediasManager.shared.albums.addObserver(ref: self, callNow: true) { _, new in
+            self.albumsDataSource.apply(.init(new))
             self.updateNavBar()
         }
 
@@ -297,10 +297,19 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let header = collectionView.supplementaryView(forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(item: 0, section: indexPath.section)) as? GroupCell else { return }
+        let medias: [Media]
+        if segmentControl.selectedSegmentIndex == 0 {
+            let section = eventsDataSource.snapshot().sectionIdentifiers[indexPath.section]
+            medias = section.medias
+        }
+        else {
+            let section = albumsDataSource.snapshot().sectionIdentifiers[indexPath.section]
+            medias = section.medias
+        }
+        guard medias.isNotEmpty else { return }
 
         let vc = MediasViewController()
-        vc.medias = header.group?.medias ?? []
+        vc.medias = medias
         vc.initialIndex = indexPath.item
         vc.animationViews = collectionView.visibleCells
             .compactMap { $0 as? MediaCell }
@@ -311,25 +320,20 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         guard let cell = collectionView.cellForItem(at: indexPath) as? MediaCell, let media = cell.media else { return nil }
-        let canAddToGroup = collectionView == eventsCollectionView
         
-        var actions = [UIAction]()
-        actions.append(UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { [weak self] _ in
-            self?.share(medias: [media])
-        })
-        if canAddToGroup, !MediasManager.shared.isInMetaGroup(media: media) {
-            actions.append(UIAction(title: "Add to group", image: UIImage(systemName: "folder")) { [weak self] _ in
-                self?.addMediasToGroup([media])
-            })
+        let actions = MediaAction.available(for: media).map { action in
+            return UIAction(title: action.title, image: action.image) { [weak self] _ in
+                switch action {
+                case .addToAlbum:   self?.addMediasToGroup([media])
+                case .share:        self?.share(medias: [media])
+                case .delete:       self?.delete(medias: [media])
+                }
+            }
         }
-        actions.append(UIAction(title: "Delete", image: UIImage(systemName: "trash")) { [weak self] _ in
-            self?.delete(medias: [media])
-        })
 
         let actionProvider: UIContextMenuActionProvider = { _ in
             return UIMenu(title: media.filename, children: actions)
         }
-
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: actionProvider)
     }
 }
