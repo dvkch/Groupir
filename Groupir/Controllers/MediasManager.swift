@@ -68,7 +68,7 @@ class MediasManager: NSObject {
         for i in 0..<updatedAlbums.count {
             updatedAlbums[i].remove(medias: medias)
         }
-        updatedAlbums.filter { $0.medias.isNotEmpty }
+        updatedAlbums.removeAll { $0.medias.isNotEmpty }
         self.albums.value = updatedAlbums
     }
 
