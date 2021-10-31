@@ -81,7 +81,6 @@ class ViewController: UIViewController {
             self.updateNavBar()
         }
 
-        PHPhotoLibrary.shared().register(self)
         segmentControlChanged()
     }
     
@@ -127,7 +126,6 @@ class ViewController: UIViewController {
     }
     
     // MARK: Properties
-    private var ignoreLibraryChanges: Bool = false
     private var eventsDataSource: UICollectionViewDiffableDataSource<Event, Media>!
     private var albumsDataSource: UICollectionViewDiffableDataSource<Album, Media>!
 
@@ -225,20 +223,18 @@ class ViewController: UIViewController {
     }
     
     private func delete(medias: [Media]) {
-        ignoreLibraryChanges = true
-        PHPhotoLibrary.shared().performChanges {
+        if medias.count > 10 {
+            SVProgressHUD.show()
+        }
+
+        PHPhotoLibrary.shared().performChanges({
             let assets = medias.map(\.asset)
             PHAssetChangeRequest.deleteAssets(assets as NSArray)
-        } completionHandler: { success, error in
+        }, completionHandler: { _, _ in
             DispatchQueue.main.async {
-                if success {
-                    self.loadGroups()
-                }
-                else {
-                    self.ignoreLibraryChanges = false
-                }
+                SVProgressHUD.dismiss()
             }
-        }
+        })
     }
     
     // MARK: Content
@@ -261,16 +257,6 @@ class ViewController: UIViewController {
         }
         navigationItem.rightBarButtonItem?.menu = UIMenu(children: actions)
         title = Event(medias: Array(groups.map(\.medias).joined())).details
-    }
-}
-
-extension ViewController: PHPhotoLibraryChangeObserver {
-    func photoLibraryDidChange(_ changeInstance: PHChange) {
-        if !ignoreLibraryChanges {
-            DispatchQueue.main.async {
-                self.loadGroups()
-            }
-        }
     }
 }
 

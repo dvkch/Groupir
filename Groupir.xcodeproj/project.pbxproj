@@ -18,6 +18,7 @@
 		975CF384272438CA00F23511 /* PHAssetResourceType+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975CF383272438CA00F23511 /* PHAssetResourceType+SY.swift */; };
 		975D84202722D7D0004B6D63 /* PrefsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975D841F2722D7D0004B6D63 /* PrefsManager.swift */; };
 		975D84222722D813004B6D63 /* UserDefaults+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975D84212722D813004B6D63 /* UserDefaults+SY.swift */; };
+		9773CBAB272EBD760033FD65 /* UIView+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9773CBAA272EBD760033FD65 /* UIView+SY.swift */; };
 		979DBD08272B37B30081339A /* NSDiffableDataSourceSnapshot+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 979DBD07272B37B30081339A /* NSDiffableDataSourceSnapshot+SY.swift */; };
 		979DBD0A272B38690081339A /* UICollectionViewDiffableDataSource+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 979DBD09272B38690081339A /* UICollectionViewDiffableDataSource+SY.swift */; };
 		979DBD0C272B3FF30081339A /* ObservedObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 979DBD0B272B3FF30081339A /* ObservedObject.swift */; };
@@ -56,6 +57,7 @@
 		975CF383272438CA00F23511 /* PHAssetResourceType+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PHAssetResourceType+SY.swift"; sourceTree = "<group>"; };
 		975D841F2722D7D0004B6D63 /* PrefsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefsManager.swift; sourceTree = "<group>"; };
 		975D84212722D813004B6D63 /* UserDefaults+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+SY.swift"; sourceTree = "<group>"; };
+		9773CBAA272EBD760033FD65 /* UIView+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+SY.swift"; sourceTree = "<group>"; };
 		979DBD07272B37B30081339A /* NSDiffableDataSourceSnapshot+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSDiffableDataSourceSnapshot+SY.swift"; sourceTree = "<group>"; };
 		979DBD09272B38690081339A /* UICollectionViewDiffableDataSource+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UICollectionViewDiffableDataSource+SY.swift"; sourceTree = "<group>"; };
 		979DBD0B272B3FF30081339A /* ObservedObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservedObject.swift; sourceTree = "<group>"; };
@@ -183,6 +185,7 @@
 				9746DF15272451D800F01B36 /* PHAssetResource+SY.swift */,
 				975CF383272438CA00F23511 /* PHAssetResourceType+SY.swift */,
 				979DBD09272B38690081339A /* UICollectionViewDiffableDataSource+SY.swift */,
+				9773CBAA272EBD760033FD65 /* UIView+SY.swift */,
 				975D84212722D813004B6D63 /* UserDefaults+SY.swift */,
 			);
 			path = Extensions;
@@ -349,6 +352,7 @@
 				97F9DB552721816700A7DCC3 /* Media.swift in Sources */,
 				9746DF16272451D800F01B36 /* PHAssetResource+SY.swift in Sources */,
 				9753403B27217F960079F537 /* ViewController.swift in Sources */,
+				9773CBAB272EBD760033FD65 /* UIView+SY.swift in Sources */,
 				979DBD10272B5E750081339A /* TempURL.swift in Sources */,
 				97F9DB6527219A9200A7DCC3 /* GroupCell.swift in Sources */,
 				97F9DB60272185DE00A7DCC3 /* AppError.swift in Sources */,

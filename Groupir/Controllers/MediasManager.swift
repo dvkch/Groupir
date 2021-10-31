@@ -22,6 +22,8 @@ class MediasManager: NSObject {
             self.albumsMediaIDs = Set(new.map(\.mediaIDs).joined())
             UserDefaults.standard.setCodable(new, for: "meta_groups")
         }
+
+        PHPhotoLibrary.shared().register(self)
     }
     
     // MARK: Events
@@ -157,3 +159,10 @@ class MediasManager: NSObject {
         return album.mediaIDs.compactMap { mediasDictionary[$0] }
     }
 }
+
+extension MediasManager: PHPhotoLibraryChangeObserver {
+    func photoLibraryDidChange(_ changeInstance: PHChange) {
+        _ = reloadEvents(progress: nil)
+    }
+}
+
