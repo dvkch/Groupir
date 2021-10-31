@@ -216,8 +216,11 @@ class ViewController: UIViewController {
             .sequence()
             .onSuccess { items in
                 SVProgressHUD.dismiss()
-                let shareVC = UIActivityViewController(activityItems: Array(items.joined()), applicationActivities: nil)
-                self.present(shareVC, animated: true, completion: {  SVProgressHUD.dismiss() })
+                let shareVC = UIActivityViewController(activityItems: Array(items.joined()).compactMap(\.sharingURL), applicationActivities: nil)
+                shareVC.completionWithItemsHandler = { _, _, _, _ in
+                    _ = items // let's keep a ref around around until sharing is done, or the files will disappear
+                }
+                self.present(shareVC, animated: true, completion: { SVProgressHUD.dismiss() })
             }
     }
     

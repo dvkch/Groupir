@@ -11,17 +11,30 @@ import Photos
 class ExportableMedia: NSObject {
     
     // MARK: Init
-    init(asset: PHAsset, resource: PHAssetResource, originalResource: PHAssetResource?) {
+    init(asset: PHAsset, kind: Kind, resource: PHAssetResource, originalResource: PHAssetResource?) {
         self.asset = asset
+        self.kind = kind
         self.resource = resource
         self.originalResource = originalResource
         super.init()
     }
     
     // MARK: Properties
+    let kind: Kind
     private let asset: PHAsset
     let resource: PHAssetResource
     private let originalResource: PHAssetResource?
+    private lazy var tempURL: TempURL? = {
+        resource.sy_privateFileURL?.tempURL(filename: filename)
+    }()
+    
+    enum Kind: Int, Comparable {
+        case video = 0, photo = 1, livePhoto = 2
+
+        static func < (lhs: ExportableMedia.Kind, rhs: ExportableMedia.Kind) -> Bool {
+            lhs.rawValue < rhs.rawValue
+        }
+    }
 
     // MARK: Computed properties
     var filename: String {
@@ -29,35 +42,9 @@ class ExportableMedia: NSObject {
             return originalUrl.deletingPathExtension().appendingPathExtension(url.pathExtension).lastPathComponent
         }
         return originalResource?.originalFilename ?? resource.originalFilename
-     }
-}
-
-extension ExportableMedia: UIActivityItemSource {
-    func activityViewController(_ activityViewController: UIActivityViewController, dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?) -> String {
-        return resource.uniformTypeIdentifier
     }
     
-    func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
-        return filename
-    }
-
-    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-        let options = PHImageRequestOptions()
-        options.isSynchronous = true
-        options.resizeMode = .fast
-        options.deliveryMode = .fastFormat
-        options.isNetworkAccessAllowed = false
-        options.version = .current
-
-        var resultImage: UIImage?
-        PHImageManager.default().requestImage(for: asset, targetSize: CGSize(width: 200, height: 200), contentMode: .aspectFit, options: options) { (image, _) in
-            resultImage = image
-        }
-        return resultImage ?? UIImage()
-    }
-    
-    func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
-        guard let url = resource.sy_privateFileURL else { return nil }
-        return try! Data(contentsOf: url, options: .mappedIfSafe)
+    var sharingURL: URL? {
+        tempURL?.url ?? resource.sy_privateFileURL
     }
 }

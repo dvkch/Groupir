@@ -53,42 +53,42 @@ class Media {
         
         // Video
         if let edit = resources.first(where: { $0.type == .fullSizeVideo }), let original = resources.first(where: { $0.type == .video }) {
-            exportabledMedias.append(ExportableMedia(asset: asset, resource: edit, originalResource: original))
+            exportabledMedias.append(ExportableMedia(asset: asset, kind: .video, resource: edit, originalResource: original))
             resources.removeAll { $0 == edit }
             resources.removeAll { $0 == original }
             resources.removeAll { $0.type == .fullSizePhoto }
         }
         else if let original = resources.first(where: { $0.type == .video }) {
-            exportabledMedias.append(ExportableMedia(asset: asset, resource: original, originalResource: nil))
+            exportabledMedias.append(ExportableMedia(asset: asset, kind: .video, resource: original, originalResource: nil))
             resources.removeAll { $0 == original }
             resources.removeAll { $0.type == .fullSizePhoto }
         }
         
         // Photo
         if let edit = resources.first(where: { $0.type == .fullSizePhoto }), let original = resources.first(where: { $0.type == .photo }) {
-            exportabledMedias.append(ExportableMedia(asset: asset, resource: edit, originalResource: original))
+            exportabledMedias.append(ExportableMedia(asset: asset, kind: .photo, resource: edit, originalResource: original))
             resources.removeAll { $0 == edit }
             resources.removeAll { $0 == original }
         }
         else if let original = resources.first(where: { $0.type == .photo }) {
-            exportabledMedias.append(ExportableMedia(asset: asset, resource: original, originalResource: nil))
+            exportabledMedias.append(ExportableMedia(asset: asset, kind: .photo, resource: original, originalResource: nil))
             resources.removeAll { $0 == original }
         }
 
         // Live photo
         if let edit = resources.first(where: { $0.type == .fullSizePairedVideo }), let original = resources.first(where: { $0.type == .pairedVideo }) {
-            exportabledMedias.append(ExportableMedia(asset: asset, resource: edit, originalResource: original))
+            exportabledMedias.append(ExportableMedia(asset: asset, kind: .livePhoto, resource: edit, originalResource: original))
             resources.removeAll { $0 == edit }
             resources.removeAll { $0 == original }
         }
         else if let original = resources.first(where: { $0.type == .pairedVideo }) {
-            exportabledMedias.append(ExportableMedia(asset: asset, resource: original, originalResource: nil))
+            exportabledMedias.append(ExportableMedia(asset: asset, kind: .livePhoto, resource: original, originalResource: nil))
             resources.removeAll { $0 == original }
         }
         
         // RAW
         if let original = resources.first(where: { $0.type == .alternatePhoto }) {
-            exportabledMedias.append(ExportableMedia(asset: asset, resource: original, originalResource: nil))
+            exportabledMedias.append(ExportableMedia(asset: asset, kind: .photo, resource: original, originalResource: nil))
             resources.removeAll { $0 == original }
         }
         
