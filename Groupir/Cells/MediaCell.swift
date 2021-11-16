@@ -94,11 +94,7 @@ class MediaCell: UICollectionViewCell {
         let size = CGSize(width: imageView.bounds.width * UIScreen.main.scale, height: imageView.bounds.height * UIScreen.main.scale)
         mediaRequestID = PHImageManager.default().requestImage(for: media.asset, targetSize: size, contentMode: .aspectFill, options: options) { [weak self] (image, _) in
             guard self?.media == media else { return }
-            if #available(iOS 15.0, *) {
-                self?.imageView.image = image?.preparingForDisplay()
-            } else {
-                self?.imageView.image = image
-            }
+            self?.imageView.image = image
         }
     }
 }
