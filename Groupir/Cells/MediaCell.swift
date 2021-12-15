@@ -62,10 +62,7 @@ class MediaCell: UICollectionViewCell {
     }
     
     private func updateContent() {
-        guard let media = media else {
-            imageView.image = nil
-            return
-        }
+        guard let media = media else { return }
 
         switch media.asset.mediaType {
         case .image:
@@ -84,17 +81,34 @@ class MediaCell: UICollectionViewCell {
             kindImageView.image = UIImage(systemName: "questionmark.folder", withConfiguration: UIImage.SymbolConfiguration(weight: UIImage.SymbolWeight.bold))
             kindImageView.layer.shadowColor = UIColor.systemBackground.cgColor
         }
-        
+        updateImage()
+    }
+    
+    private func updateImage() {
+        guard let media = media else {
+            imageView.image = nil
+            return
+        }
+       
         let options = PHImageRequestOptions()
         options.version = .current
         options.isNetworkAccessAllowed = false
-        options.deliveryMode = .fastFormat
+        options.deliveryMode = .opportunistic
         options.resizeMode = .fast
         
         let size = CGSize(width: imageView.bounds.width * UIScreen.main.scale, height: imageView.bounds.height * UIScreen.main.scale)
         mediaRequestID = PHImageManager.default().requestImage(for: media.asset, targetSize: size, contentMode: .aspectFill, options: options) { [weak self] (image, _) in
             guard self?.media == media else { return }
             self?.imageView.image = image
+        }
+    }
+    
+    private var previousSize: CGSize = .zero
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        if previousSize != bounds.size {
+            previousSize = bounds.size
+            updateImage()
         }
     }
 }
