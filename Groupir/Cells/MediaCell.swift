@@ -31,8 +31,25 @@ class MediaCell: UICollectionViewCell {
         contentView.addSubview(kindImageView)
         kindImageView.snp.makeConstraints { make in
             make.size.equalToSuperview().multipliedBy(0.3)
+            make.bottom.left.equalToSuperview().offset(4)
+        }
+        
+        selectionOverlayView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.4)
+        contentView.addSubview(selectionOverlayView)
+        selectionOverlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        selectionImageView.image = UIImage(systemName: "checkmark.circle", withConfiguration: UIImage.SymbolConfiguration(weight: UIImage.SymbolWeight.bold))
+        selectionImageView.backgroundColor = .systemPurple
+        selectionImageView.tintColor = .white
+        contentView.addSubview(selectionImageView)
+        selectionImageView.snp.makeConstraints { make in
+            make.size.equalToSuperview().multipliedBy(0.3)
             make.bottom.right.equalToSuperview().offset(-4)
         }
+        
+        updateSelection()
     }
     
     required init?(coder: NSCoder) {
@@ -47,9 +64,17 @@ class MediaCell: UICollectionViewCell {
     }
     private var mediaRequestID: PHImageRequestID?
     
+    override var isSelected: Bool {
+        didSet {
+            updateSelection()
+        }
+    }
+    
     // MARK: Views
     private let imageView = UIImageView()
     private let kindImageView = UIImageView()
+    private let selectionOverlayView = UIView()
+    private let selectionImageView = UIImageView()
     
     // MARK: Content
     override func prepareForReuse() {
@@ -59,6 +84,7 @@ class MediaCell: UICollectionViewCell {
             PHImageManager.default().cancelImageRequest(mediaRequestID)
         }
         mediaRequestID = nil
+        updateSelection()
     }
     
     private func updateContent() {
@@ -110,5 +136,13 @@ class MediaCell: UICollectionViewCell {
             previousSize = bounds.size
             updateImage()
         }
+        
+        contentView.layoutIfNeeded()
+        selectionImageView.layer.cornerRadius = selectionImageView.bounds.width / 2
+    }
+    
+    private func updateSelection() {
+        selectionImageView.isHidden = !isSelected
+        selectionOverlayView.isHidden = !isSelected
     }
 }

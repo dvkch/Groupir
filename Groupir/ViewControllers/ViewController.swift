@@ -18,7 +18,12 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         restorationIdentifier = "ViewController"
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Biggest", image: nil, primaryAction: nil, menu: nil)
+        
+        selectionButtonItem = .init(image: UIImage(systemName: "checkmark.rectangle"), style: .plain, target: self, action: #selector(editButtonTap))
+        navigationItem.leftBarButtonItem = selectionButtonItem
+        
+        selectionActionsButtonItem = .init(image: UIImage(systemName: "arrowshape.turn.up.forward"), primaryAction: nil, menu: nil)
+        quickJumpButtonItem = .init(image: UIImage(systemName: "filemenu.and.selection"), primaryAction: nil, menu: nil)
 
         segmentControl.insertSegment(withTitle: "Events", at: 0, animated: false)
         segmentControl.insertSegment(withTitle: "Albums", at: 1, animated: false)
@@ -41,6 +46,8 @@ class ViewController: UIViewController {
             collectionView.register(MediaCell.self, forCellWithReuseIdentifier: "MediaCell")
             collectionView.register(GroupCell.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "GroupCell")
             collectionView.delegate = self
+            collectionView.allowsSelectionDuringEditing = true
+            collectionView.allowsMultipleSelectionDuringEditing = true
             view.addSubview(collectionView)
             collectionView.snp.makeConstraints { make in
                 make.top.equalTo(segmentControl.snp.bottom).offset(8)
@@ -82,6 +89,7 @@ class ViewController: UIViewController {
         }
 
         segmentControlChanged()
+        isEditing = false
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -130,6 +138,9 @@ class ViewController: UIViewController {
     private var albumsDataSource: UICollectionViewDiffableDataSource<Album, Media>!
 
     // MARK: Views
+    private var selectionButtonItem = UIBarButtonItem()
+    private var selectionActionsButtonItem = UIBarButtonItem()
+    private var quickJumpButtonItem = UIBarButtonItem()
     private let segmentControl = UISegmentedControl()
     private let eventsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     private let albumsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
@@ -138,6 +149,17 @@ class ViewController: UIViewController {
     }
 
     // MARK: Actions
+    override var isEditing: Bool {
+        didSet {
+            [eventsCollectionView, albumsCollectionView].forEach { $0.isEditing = isEditing }
+            updateNavBar()
+        }
+    }
+
+    @objc func editButtonTap() {
+        isEditing = !isEditing
+    }
+    
     private func loadGroups() {
         SVProgressHUD.show()
         MediasManager.shared.reloadEvents(progress: { progress in
@@ -155,9 +177,9 @@ class ViewController: UIViewController {
     }
 
     @objc private func segmentControlChanged() {
+        isEditing = false
         eventsCollectionView.isHidden = segmentControl.selectedSegmentIndex != 0
         albumsCollectionView.isHidden = segmentControl.selectedSegmentIndex != 1
-        updateNavBar()
     }
 
     private func scrollTo(_ group: Groupable, animated: Bool) {
@@ -241,22 +263,54 @@ class ViewController: UIViewController {
     private func updateNavBar() {
         let groups: [Groupable]
         let biggestGroups: [Groupable]
+        let selectedMedias: [Media]
         if segmentControl.selectedSegmentIndex == 0 {
-            groups = eventsDataSource.snapshot().sectionIdentifiers
-            biggestGroups = Array(eventsDataSource.snapshot().sectionIdentifiers.sorted().reversed().prefix(20))
+            let snapshot = eventsDataSource.snapshot()
+            groups = snapshot.sectionIdentifiers
+            biggestGroups = Array(snapshot.sectionIdentifiers.sorted().reversed().prefix(20))
+            selectedMedias = eventsCollectionView.indexPathsForSelectedItems?.map {
+                let section = snapshot.sectionIdentifiers[$0.section]
+                return snapshot.itemIdentifiers(inSection: section)[$0.item]
+            } ?? []
         }
         else {
-            groups = albumsDataSource.snapshot().sectionIdentifiers
-            biggestGroups = Array(albumsDataSource.snapshot().sectionIdentifiers.sorted().reversed().prefix(20))
+            let snapshot = albumsDataSource.snapshot()
+            groups = snapshot.sectionIdentifiers
+            biggestGroups = Array(snapshot.sectionIdentifiers.sorted().reversed().prefix(20))
+            selectedMedias = albumsCollectionView.indexPathsForSelectedItems?.map {
+                let section = snapshot.sectionIdentifiers[$0.section]
+                return snapshot.itemIdentifiers(inSection: section)[$0.item]
+            } ?? []
         }
 
-        let actions: [UIMenuElement] = biggestGroups.map { group in
-            UIAction(title: [group.title, group.details].joined(separator: "\n")) { [weak self] _ in
-                self?.scrollTo(group, animated: true)
+        if isEditing {
+            title = Event(medias: selectedMedias).details
+            selectionButtonItem.image = UIImage(systemName: "checkmark.rectangle")
+            navigationItem.rightBarButtonItem = selectionActionsButtonItem
+            let actions = MediaAction.available(for: selectedMedias).map { action in
+                return UIAction(title: action.title, image: action.image) { [weak self] _ in
+                    switch action {
+                    case .addToAlbum:       self?.addMediasToGroup(selectedMedias)
+                    case .removeFromAlbum:  self?.removeMediasFromAlbums(selectedMedias)
+                    case .share:            self?.share(medias: selectedMedias)
+                    case .delete:           self?.delete(medias: selectedMedias)
+                    }
+                    self?.isEditing = false
+                }
             }
+            selectionActionsButtonItem.menu = UIMenu(children: actions)
         }
-        navigationItem.rightBarButtonItem?.menu = UIMenu(children: actions)
-        title = Event(medias: Array(groups.map(\.medias).joined())).details
+        else {
+            title = Event(medias: Array(groups.map(\.medias).joined())).details
+            selectionButtonItem.image = UIImage(systemName: "rectangle")
+            navigationItem.rightBarButtonItem = quickJumpButtonItem
+            let actions: [UIMenuElement] = biggestGroups.map { group in
+                UIAction(title: [group.title, group.details].joined(separator: "\n")) { [weak self] _ in
+                    self?.scrollTo(group, animated: true)
+                }
+            }
+            quickJumpButtonItem.menu = UIMenu(children: actions)
+        }
     }
 }
 
@@ -315,6 +369,13 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard !isEditing else {
+            updateNavBar()
+            return
+        }
+        
+        collectionView.deselectItem(at: indexPath, animated: false)
+        
         let medias: [Media]
         if segmentControl.selectedSegmentIndex == 0 {
             let section = eventsDataSource.snapshot().sectionIdentifiers[indexPath.section]
@@ -336,6 +397,12 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
         present(vc, animated: true, completion: nil)
     }
     
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        if isEditing {
+            updateNavBar()
+        }
+    }
+    
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         guard let cell = collectionView.cellForItem(at: indexPath) as? MediaCell, let media = cell.media else { return nil }
         
@@ -343,7 +410,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
             return UIAction(title: action.title, image: action.image) { [weak self] _ in
                 switch action {
                 case .addToAlbum:       self?.addMediasToGroup([media])
-                case .removeFromAblum:  self?.removeMediasFromAlbums([media])
+                case .removeFromAlbum:  self?.removeMediasFromAlbums([media])
                 case .share:            self?.share(medias: [media])
                 case .delete:           self?.delete(medias: [media])
                 }

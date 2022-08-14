@@ -44,4 +44,11 @@ enum MediaAction: CaseIterable {
     static func available(for media: Media) -> [MediaAction] {
         return allCases.filter { $0.isAvailable(for: media) }
     }
+    
+    static func available(for medias: [Media]) -> [MediaAction] {
+        let compatibleActions = medias
+            .map { Set(available(for: $0)) }
+            .reduce(Set(allCases), { acc, res in acc.intersection(res) })
+        return allCases.filter { compatibleActions.contains($0) }
+    }
 }
