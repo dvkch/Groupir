@@ -260,14 +260,25 @@ class ViewController: UIViewController {
     }
     
     // MARK: Content
-    private func updateNavBar() {
+    private var visibleGroups: [Groupable] {
+        let groups: [Groupable]
+        if segmentControl.selectedSegmentIndex == 0 {
+            let snapshot = eventsDataSource.snapshot()
+            groups = snapshot.sectionIdentifiers
+        }
+        else {
+            let snapshot = albumsDataSource.snapshot()
+            groups = snapshot.sectionIdentifiers
+        }
+        return groups
+    }
+    
+    private var selectedMedias: [Media] {
         let groups: [Groupable]
         let biggestGroups: [Groupable]
         let selectedMedias: [Media]
         if segmentControl.selectedSegmentIndex == 0 {
             let snapshot = eventsDataSource.snapshot()
-            groups = snapshot.sectionIdentifiers
-            biggestGroups = Array(snapshot.sectionIdentifiers.sorted().reversed().prefix(20))
             selectedMedias = eventsCollectionView.indexPathsForSelectedItems?.map {
                 let section = snapshot.sectionIdentifiers[$0.section]
                 return snapshot.itemIdentifiers(inSection: section)[$0.item]
@@ -275,15 +286,17 @@ class ViewController: UIViewController {
         }
         else {
             let snapshot = albumsDataSource.snapshot()
-            groups = snapshot.sectionIdentifiers
-            biggestGroups = Array(snapshot.sectionIdentifiers.sorted().reversed().prefix(20))
             selectedMedias = albumsCollectionView.indexPathsForSelectedItems?.map {
                 let section = snapshot.sectionIdentifiers[$0.section]
                 return snapshot.itemIdentifiers(inSection: section)[$0.item]
             } ?? []
         }
+        return selectedMedias
+    }
 
+    private func updateNavBar() {
         if isEditing {
+            let selectedMedias = self.selectedMedias
             title = Event(medias: selectedMedias).details
             selectionButtonItem.image = UIImage(systemName: "checkmark.rectangle")
             navigationItem.rightBarButtonItem = selectionActionsButtonItem
@@ -301,6 +314,9 @@ class ViewController: UIViewController {
             selectionActionsButtonItem.menu = UIMenu(children: actions)
         }
         else {
+            let groups = self.visibleGroups
+            let biggestGroups = Array(groups.sorted(by: { $0.size > $1.size }).prefix(20))
+
             title = Event(medias: Array(groups.map(\.medias).joined())).details
             selectionButtonItem.image = UIImage(systemName: "rectangle")
             navigationItem.rightBarButtonItem = quickJumpButtonItem
