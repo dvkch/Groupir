@@ -381,7 +381,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         let availableWidth = collectionView.bounds.inset(by: collectionView.adjustedContentInset).width
-        return CGSize(width: availableWidth, height: 60)
+        return CGSize(width: availableWidth, height: 50)
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {

@@ -22,6 +22,10 @@ class GroupCell: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
+        backgroundColor = .secondarySystemBackground
+        layer.cornerRadius = 8
+        layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        
         label.textColor = .label
         label.numberOfLines = 0
         addSubview(label)
