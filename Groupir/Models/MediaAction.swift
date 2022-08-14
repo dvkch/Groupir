@@ -8,12 +8,12 @@
 import UIKit
 
 enum MediaAction: CaseIterable {
-    case addToAlbum, removeFromAblum, share, delete
+    case addToAlbum, removeFromAlbum, share, delete
     
     var title: String {
         switch self {
         case .addToAlbum:           return "Add to album..."
-        case .removeFromAblum:      return "Remove from album"
+        case .removeFromAlbum:      return "Remove from album"
         case .share:                return "Share"
         case .delete:               return "Delete"
         }
@@ -22,7 +22,7 @@ enum MediaAction: CaseIterable {
     var imageName: String {
         switch self {
         case .addToAlbum:           return "folder.badge.plus"
-        case .removeFromAblum:      return "folder.badge.minus"
+        case .removeFromAlbum:      return "folder.badge.minus"
         case .share:                return "square.and.arrow.up"
         case .delete:               return "trash"
         }
@@ -35,7 +35,7 @@ enum MediaAction: CaseIterable {
     func isAvailable(for media: Media) -> Bool {
         switch self {
         case .addToAlbum:           return !MediasManager.shared.isInAlbum(media: media)
-        case .removeFromAblum:      return MediasManager.shared.isInAlbum(media: media)
+        case .removeFromAlbum:      return MediasManager.shared.isInAlbum(media: media)
         case .share:                return true
         case .delete:               return true
         }
