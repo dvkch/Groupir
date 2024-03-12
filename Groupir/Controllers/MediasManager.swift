@@ -7,6 +7,7 @@
 
 import Photos
 import BrightFutures
+import SYKit
 
 class MediasManager: NSObject {
 

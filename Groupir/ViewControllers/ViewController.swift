@@ -8,9 +8,9 @@
 import UIKit
 import Photos
 import SnapKit
-import SVProgressHUD
 import BrightFutures
 import QuickLook
+import SYKit
 
 class ViewController: UIViewController {
 
@@ -161,19 +161,21 @@ class ViewController: UIViewController {
     }
     
     private func loadGroups() {
-        SVProgressHUD.show()
-        MediasManager.shared.reloadEvents(progress: { progress in
-            SVProgressHUD.showProgress(progress)
-        }).andThen { result in
-            SVProgressHUD.dismiss()
-        }.onFailure { error in
-            let alert = UIAlertController(title: error.localizedDescription, message: nil, preferredStyle: .alert)
-            error.recoveryOptions.enumerated().forEach { option in
-                alert.addAction(UIAlertAction(title: option.element, style: .default, handler: { _ in _ = error.attemptRecovery(optionIndex: option.offset) }))
+        let hud = HUDAlertController()
+        MediasManager.shared
+            .reloadEvents(progress: { progress in
+            // TODO: SVProgressHUD.showProgress(progress)
+            })
+            .andThen { result in hud.dismiss(animated: false) }
+            .delay(.milliseconds(100))
+            .onFailure { error in
+                let alert = UIAlertController(title: error.localizedDescription, message: nil, preferredStyle: .alert)
+                error.recoveryOptions.enumerated().forEach { option in
+                    alert.addAction(UIAlertAction(title: option.element, style: .default, handler: { _ in _ = error.attemptRecovery(optionIndex: option.offset) }))
+                }
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
             }
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            self.present(alert, animated: true, completion: nil)
-        }
     }
 
     @objc private func segmentControlChanged() {
@@ -229,24 +231,29 @@ class ViewController: UIViewController {
     }
     
     private func share(medias: [Media]) {
-        SVProgressHUD.show()
+        let hud = HUDAlertController()
         
         medias
             .map { $0.obtainExportURL() }
             .sequence()
+            .andThen { _ in hud.dismiss(animated: false) }
+            .delay(.milliseconds(100))
             .onSuccess { items in
-                SVProgressHUD.dismiss()
-                let shareVC = UIActivityViewController(activityItems: Array(items.joined()).compactMap(\.sharingURL), applicationActivities: nil)
+                let shareVC = UIActivityViewController(
+                    activityItems: Array(items.joined()).compactMap(\.sharingURL),
+                    applicationActivities: nil
+                )
                 shareVC.completionWithItemsHandler = { _, _, _, _ in
                     _ = items // let's keep a ref around around until sharing is done, or the files will disappear
                 }
-                self.present(shareVC, animated: true, completion: { SVProgressHUD.dismiss() })
+                self.present(shareVC, animated: true)
             }
     }
     
     private func delete(medias: [Media]) {
+        var hud: HUDAlertController? = nil
         if medias.count > 10 {
-            SVProgressHUD.show()
+            hud = HUDAlertController()
         }
 
         PHPhotoLibrary.shared().performChanges({
@@ -254,7 +261,7 @@ class ViewController: UIViewController {
             PHAssetChangeRequest.deleteAssets(assets as NSArray)
         }, completionHandler: { _, _ in
             DispatchQueue.main.async {
-                SVProgressHUD.dismiss()
+                HUDAlertController.dismiss(hud)
             }
         })
     }
@@ -274,8 +281,6 @@ class ViewController: UIViewController {
     }
     
     private var selectedMedias: [Media] {
-        let groups: [Groupable]
-        let biggestGroups: [Groupable]
         let selectedMedias: [Media]
         if segmentControl.selectedSegmentIndex == 0 {
             let snapshot = eventsDataSource.snapshot()

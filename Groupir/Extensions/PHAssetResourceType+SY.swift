@@ -28,6 +28,7 @@ extension PHAssetResourceType: CustomStringConvertible {
         case .fullSizePairedVideo:          return "fullSizePairedVideo"
         case .adjustmentBasePairedVideo:    return "adjustmentBasePairedVideo"
         case .adjustmentBaseVideo:          return "adjustmentBaseVideo"
+        case .photoProxy:                   return "photoProxy"
         @unknown default:                   return "unknown"
         }
     }
@@ -46,6 +47,7 @@ extension PHAssetResourceType: CustomStringConvertible {
         case .fullSizePairedVideo:          return false
         case .adjustmentBasePairedVideo:    return false
         case .adjustmentBaseVideo:          return false
+        case .photoProxy:                   return false
         @unknown default:                   return true
         }
     }
