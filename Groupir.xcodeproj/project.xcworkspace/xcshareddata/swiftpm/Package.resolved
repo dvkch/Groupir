@@ -1,0 +1,32 @@
+{
+  "pins" : [
+    {
+      "identity" : "brightfutures",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Thomvis/BrightFutures",
+      "state" : {
+        "revision" : "fa66fa183dce7196d431244d0215748cd14c5758",
+        "version" : "8.2.0"
+      }
+    },
+    {
+      "identity" : "snapkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SnapKit/SnapKit.git",
+      "state" : {
+        "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
+        "version" : "5.7.1"
+      }
+    },
+    {
+      "identity" : "sykit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dvkch/SYKit.git",
+      "state" : {
+        "revision" : "7462a9a63798c7f3300afd0b36f14a6205649a63",
+        "version" : "0.2.16"
+      }
+    }
+  ],
+  "version" : 2
+}

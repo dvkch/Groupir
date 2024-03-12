@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1F07AAE35E60A79B79513C89 /* Pods_Groupir.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9BD3EF19DA6F19842076781 /* Pods_Groupir.framework */; };
 		9746DF16272451D800F01B36 /* PHAssetResource+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9746DF15272451D800F01B36 /* PHAssetResource+SY.swift */; };
 		9753403727217F960079F537 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9753403627217F960079F537 /* AppDelegate.swift */; };
 		9753403927217F960079F537 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9753403827217F960079F537 /* SceneDelegate.swift */; };
@@ -40,11 +39,12 @@
 		97F9DB60272185DE00A7DCC3 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB5F272185DE00A7DCC3 /* AppError.swift */; };
 		97F9DB63272189CF00A7DCC3 /* MediaCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB62272189CF00A7DCC3 /* MediaCell.swift */; };
 		97F9DB6527219A9200A7DCC3 /* GroupCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB6427219A9200A7DCC3 /* GroupCell.swift */; };
+		97FA16B02BA0656F004D695B /* BrightFutures in Frameworks */ = {isa = PBXBuildFile; productRef = 97FA16AF2BA0656F004D695B /* BrightFutures */; };
+		97FA16B32BA06794004D695B /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 97FA16B22BA06794004D695B /* SnapKit */; };
+		97FA16B62BA091C7004D695B /* SYKit in Frameworks */ = {isa = PBXBuildFile; productRef = 97FA16B52BA091C7004D695B /* SYKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		654FB45A1DE146F16235507E /* Pods-Groupir.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Groupir.debug.xcconfig"; path = "Target Support Files/Pods-Groupir/Pods-Groupir.debug.xcconfig"; sourceTree = "<group>"; };
-		6A3A003AB32A119A7BC9CBA1 /* Pods-Groupir.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Groupir.release.xcconfig"; path = "Target Support Files/Pods-Groupir/Pods-Groupir.release.xcconfig"; sourceTree = "<group>"; };
 		9746DF15272451D800F01B36 /* PHAssetResource+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PHAssetResource+SY.swift"; sourceTree = "<group>"; };
 		9753403327217F960079F537 /* Groupir.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Groupir.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9753403627217F960079F537 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -79,7 +79,6 @@
 		97F9DB5F272185DE00A7DCC3 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		97F9DB62272189CF00A7DCC3 /* MediaCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCell.swift; sourceTree = "<group>"; };
 		97F9DB6427219A9200A7DCC3 /* GroupCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupCell.swift; sourceTree = "<group>"; };
-		F9BD3EF19DA6F19842076781 /* Pods_Groupir.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Groupir.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,28 +86,20 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1F07AAE35E60A79B79513C89 /* Pods_Groupir.framework in Frameworks */,
+				97FA16B32BA06794004D695B /* SnapKit in Frameworks */,
+				97FA16B62BA091C7004D695B /* SYKit in Frameworks */,
+				97FA16B02BA0656F004D695B /* BrightFutures in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		134CB0EF9A500E060DFCD81C /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				F9BD3EF19DA6F19842076781 /* Pods_Groupir.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		9753402A27217F960079F537 = {
 			isa = PBXGroup;
 			children = (
 				9753403527217F960079F537 /* Groupir */,
 				9753403427217F960079F537 /* Products */,
-				984DCDEC516AE09EC7C9E167 /* Pods */,
-				134CB0EF9A500E060DFCD81C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -200,15 +191,6 @@
 			path = Cells;
 			sourceTree = "<group>";
 		};
-		984DCDEC516AE09EC7C9E167 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				654FB45A1DE146F16235507E /* Pods-Groupir.debug.xcconfig */,
-				6A3A003AB32A119A7BC9CBA1 /* Pods-Groupir.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -217,17 +199,20 @@
 			buildConfigurationList = 9753404727217F980079F537 /* Build configuration list for PBXNativeTarget "Groupir" */;
 			buildPhases = (
 				9746DF1227244B7600F01B36 /* TODOs */,
-				2A91E408226C8B21F1F183C9 /* [CP] Check Pods Manifest.lock */,
 				9753402F27217F960079F537 /* Sources */,
 				9753403027217F960079F537 /* Frameworks */,
 				9753403127217F960079F537 /* Resources */,
-				B7925DFE54302B78903548D7 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = Groupir;
+			packageProductDependencies = (
+				97FA16AF2BA0656F004D695B /* BrightFutures */,
+				97FA16B22BA06794004D695B /* SnapKit */,
+				97FA16B52BA091C7004D695B /* SYKit */,
+			);
 			productName = Groupir;
 			productReference = 9753403327217F960079F537 /* Groupir.app */;
 			productType = "com.apple.product-type.application";
@@ -256,6 +241,11 @@
 				Base,
 			);
 			mainGroup = 9753402A27217F960079F537;
+			packageReferences = (
+				97FA16AE2BA0656F004D695B /* XCRemoteSwiftPackageReference "BrightFutures" */,
+				97FA16B12BA06794004D695B /* XCRemoteSwiftPackageReference "SnapKit" */,
+				97FA16B42BA091C7004D695B /* XCRemoteSwiftPackageReference "SYKit" */,
+			);
 			productRefGroup = 9753403427217F960079F537 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -278,31 +268,10 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		2A91E408226C8B21F1F183C9 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-Groupir-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
 		9746DF1227244B7600F01B36 /* TODOs */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			alwaysOutOfDate = 1;
+			buildActionMask = 12;
 			files = (
 			);
 			inputFileListPaths = (
@@ -317,23 +286,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "declare -a TAGS=(\"TODO:\" \"FIXME:\" \"LATER:\")\necho \"searching ${SRCROOT} for ${TAGS}\"\n\nfor TAG in ${TAGS[@]}; do\nfind \"${SRCROOT}/Groupir\" \\( -name \"*.h\" -or -name \"*.m\" -or -name \"*.swift\" \\) -print0 | xargs -0 egrep --with-filename --line-number --only-matching \"($TAG).*\\$\" | perl -p -e \"s/($TAG)/ warning: \\$1/\"\ndone\n";
-		};
-		B7925DFE54302B78903548D7 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Groupir/Pods-Groupir-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Groupir/Pods-Groupir-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Groupir/Pods-Groupir-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -507,7 +459,6 @@
 		};
 		9753404827217F980079F537 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 654FB45A1DE146F16235507E /* Pods-Groupir.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -536,7 +487,6 @@
 		};
 		9753404927217F980079F537 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6A3A003AB32A119A7BC9CBA1 /* Pods-Groupir.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -585,6 +535,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		97FA16AE2BA0656F004D695B /* XCRemoteSwiftPackageReference "BrightFutures" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Thomvis/BrightFutures";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.2.0;
+			};
+		};
+		97FA16B12BA06794004D695B /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		97FA16B42BA091C7004D695B /* XCRemoteSwiftPackageReference "SYKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dvkch/SYKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.16;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		97FA16AF2BA0656F004D695B /* BrightFutures */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 97FA16AE2BA0656F004D695B /* XCRemoteSwiftPackageReference "BrightFutures" */;
+			productName = BrightFutures;
+		};
+		97FA16B22BA06794004D695B /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 97FA16B12BA06794004D695B /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		97FA16B52BA091C7004D695B /* SYKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 97FA16B42BA091C7004D695B /* XCRemoteSwiftPackageReference "SYKit" */;
+			productName = SYKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9753402B27217F960079F537 /* Project object */;
 }
