@@ -1,5 +1,5 @@
 //
-//  PrefsManager.swift
+//  Preferences.swift
 //  Groupir
 //
 //  Created by Stanislas Chevallier on 22/10/2021.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-class PrefsManager {
+class Preferences {
 
     // MARK: Init
     static let shared = PrefsManager()

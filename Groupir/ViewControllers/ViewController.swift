@@ -120,7 +120,7 @@ class ViewController: UIViewController {
         let topVisibleEventDate = (activity.userInfo?["top_event_media_date"] as? Date)
         let topVisibleAlbumUniqueID = (activity.userInfo?["top_album_unique_id"] as? String)
 
-        MediasManager.shared.reloadEvents(progress: nil).onSuccess { _ in
+        loadGroups {
             if let date = topVisibleEventDate,
                 let media = MediasManager.shared.medias.first(where: { $0.date >= date }),
                let section = self.eventsDataSource.snapshot().sectionIdentifier(containingItem: media)
@@ -160,21 +160,23 @@ class ViewController: UIViewController {
         isEditing = !isEditing
     }
     
-    private func loadGroups() {
-        let hud = HUDAlertController()
+    private func loadGroups(_ success: (() -> ())? = nil) {
+        let hud = HUDAlertController.show(in: self)
         MediasManager.shared
-            .reloadEvents(progress: { progress in
-            // TODO: SVProgressHUD.showProgress(progress)
+            .reloadEvents(progress: { progress in 
+                hud.progress = progress
             })
-            .andThen { result in hud.dismiss(animated: false) }
-            .delay(.milliseconds(100))
+            .onSuccess { _ in 
+                hud.dismiss(animated: true)
+                success?()
+            }
             .onFailure { error in
                 let alert = UIAlertController(title: error.localizedDescription, message: nil, preferredStyle: .alert)
                 error.recoveryOptions.enumerated().forEach { option in
                     alert.addAction(UIAlertAction(title: option.element, style: .default, handler: { _ in _ = error.attemptRecovery(optionIndex: option.offset) }))
                 }
                 alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                self.present(alert, animated: true, completion: nil)
+                self.present(alert, afterDismissing: hud, animated: true, completion: nil)
             }
     }
 
@@ -231,13 +233,11 @@ class ViewController: UIViewController {
     }
     
     private func share(medias: [Media]) {
-        let hud = HUDAlertController()
-        
+        let hud = HUDAlertController.show(in: self)
+
         medias
             .map { $0.obtainExportURL() }
             .sequence()
-            .andThen { _ in hud.dismiss(animated: false) }
-            .delay(.milliseconds(100))
             .onSuccess { items in
                 let shareVC = UIActivityViewController(
                     activityItems: Array(items.joined()).compactMap(\.sharingURL),
@@ -246,14 +246,14 @@ class ViewController: UIViewController {
                 shareVC.completionWithItemsHandler = { _, _, _, _ in
                     _ = items // let's keep a ref around around until sharing is done, or the files will disappear
                 }
-                self.present(shareVC, animated: true)
+                self.present(shareVC, afterDismissing: hud, animated: true)
             }
     }
     
     private func delete(medias: [Media]) {
         var hud: HUDAlertController? = nil
         if medias.count > 10 {
-            hud = HUDAlertController()
+            hud = HUDAlertController.show(in: self)
         }
 
         PHPhotoLibrary.shared().performChanges({

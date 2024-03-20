@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dvkch/SYKit.git",
       "state" : {
-        "revision" : "6a1eb9df50d5a89fb45aa42344f924bd8206a7dc",
-        "version" : "0.2.17"
+        "revision" : "37d615fcbc6c1fe2339e6ecf6bd392caee020826",
+        "version" : "0.2.21"
       }
     }
   ],
