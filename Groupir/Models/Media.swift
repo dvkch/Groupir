@@ -18,7 +18,7 @@ class Media {
         self.asset = asset
         self.date = date
         
-        if let size = PrefsManager.shared.cachedFileSizes[asset.localIdentifier] {
+        if let size = Preferences.shared.cachedFileSizes[asset.localIdentifier] {
             self.size = size
         }
         else {
@@ -102,7 +102,7 @@ class Media {
         return exportabledMedias
     }
 
-    func obtainExportURL(allowRetry: Bool = true) -> Future<[ExportableMedia], AppError> {
+    func obtainExportURL(allowRetry: Bool = true) -> Future<[ExportableMedia], Never> {
         return Future.init { resolver in
             resolver(.success(exportableResources))
         }

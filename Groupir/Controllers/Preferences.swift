@@ -6,22 +6,17 @@
 //
 
 import Foundation
+import SYKit
 
 class Preferences {
 
     // MARK: Init
-    static let shared = PrefsManager()
-    private init() {
-        cachedFileSizes = UserDefaults.standard.codableValue([String: UInt64].self, for: "cached_file_sizes") ?? [:]
-        linkedMedias = UserDefaults.standard.codableValue([LinkedMedia].self, for: "linked_medias") ?? []
-    }
+    static let shared = Preferences()
+    private init() { }
 
     // MARK: File size cache
-    private(set) var cachedFileSizes: [String: UInt64] {
-        didSet {
-            UserDefaults.standard.setCodable(cachedFileSizes, for: "cached_file_sizes")
-        }
-    }
+    @PrefValue(key: "cached_file_sizes", defaultValue: [:], ubiquitous: nil)
+    private(set) var cachedFileSizes: [String: UInt64]
     
     func cacheFileSizes(from medias: [Media]) {
         var sizes = [String: UInt64]()
@@ -31,11 +26,8 @@ class Preferences {
     }
     
     // MARK: Merged groups
-    private(set) var linkedMedias: [LinkedMedia] {
-        didSet {
-            UserDefaults.standard.setCodable(linkedMedias, for: "linked_medias")
-        }
-    }
+    @PrefValue(key: "linked_medias", defaultValue: [], ubiquitous: nil)
+    private(set) var linkedMedias: [LinkedMedia]
     
     func link(media media1: Media, to media2: Media) {
         linkedMedias.append(LinkedMedia(mediaID1: media1.asset.localIdentifier, mediaID2: media2.asset.localIdentifier))
@@ -47,5 +39,4 @@ class Preferences {
             linkedMedias.removeAll(where: { $0.mediaID1 == prevMedia.asset.localIdentifier && $0.mediaID2 == media.asset.localIdentifier })
         }
     }
-    
 }

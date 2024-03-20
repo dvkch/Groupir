@@ -353,7 +353,7 @@ extension ViewController: GroupCellDelegate {
         var updatedGroups = MediasManager.shared.events.value
         guard let index = updatedGroups.firstIndex(of: group) else { return }
 
-        PrefsManager.shared.unlink(group: updatedGroups[index])
+        Preferences.shared.unlink(group: updatedGroups[index])
         
         let mediasToRegroup = updatedGroups[index].medias
         updatedGroups.remove(at: index)

@@ -15,7 +15,7 @@
 		9753404327217F980079F537 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9753404127217F980079F537 /* LaunchScreen.storyboard */; };
 		975CF38227242EB800F23511 /* ExportableMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975CF38127242EB800F23511 /* ExportableMedia.swift */; };
 		975CF384272438CA00F23511 /* PHAssetResourceType+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975CF383272438CA00F23511 /* PHAssetResourceType+SY.swift */; };
-		975D84202722D7D0004B6D63 /* PrefsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975D841F2722D7D0004B6D63 /* PrefsManager.swift */; };
+		975D84202722D7D0004B6D63 /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975D841F2722D7D0004B6D63 /* Preferences.swift */; };
 		975D84222722D813004B6D63 /* UserDefaults+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975D84212722D813004B6D63 /* UserDefaults+SY.swift */; };
 		9773CBAB272EBD760033FD65 /* UIView+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9773CBAA272EBD760033FD65 /* UIView+SY.swift */; };
 		979DBD08272B37B30081339A /* NSDiffableDataSourceSnapshot+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 979DBD07272B37B30081339A /* NSDiffableDataSourceSnapshot+SY.swift */; };
@@ -54,7 +54,7 @@
 		9753404427217F980079F537 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		975CF38127242EB800F23511 /* ExportableMedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportableMedia.swift; sourceTree = "<group>"; };
 		975CF383272438CA00F23511 /* PHAssetResourceType+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PHAssetResourceType+SY.swift"; sourceTree = "<group>"; };
-		975D841F2722D7D0004B6D63 /* PrefsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrefsManager.swift; sourceTree = "<group>"; };
+		975D841F2722D7D0004B6D63 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		975D84212722D813004B6D63 /* UserDefaults+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+SY.swift"; sourceTree = "<group>"; };
 		9773CBAA272EBD760033FD65 /* UIView+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+SY.swift"; sourceTree = "<group>"; };
 		979DBD07272B37B30081339A /* NSDiffableDataSourceSnapshot+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSDiffableDataSourceSnapshot+SY.swift"; sourceTree = "<group>"; };
@@ -157,7 +157,7 @@
 			isa = PBXGroup;
 			children = (
 				97F9DB5D2721854400A7DCC3 /* MediasManager.swift */,
-				975D841F2722D7D0004B6D63 /* PrefsManager.swift */,
+				975D841F2722D7D0004B6D63 /* Preferences.swift */,
 				979DBD15272B6F970081339A /* Logger.swift */,
 			);
 			path = Controllers;
@@ -294,7 +294,7 @@
 				97D5DD1F2725870E00352F0C /* Group.swift in Sources */,
 				975CF384272438CA00F23511 /* PHAssetResourceType+SY.swift in Sources */,
 				979DBD12272B63EC0081339A /* MediaPreviewItem.swift in Sources */,
-				975D84202722D7D0004B6D63 /* PrefsManager.swift in Sources */,
+				975D84202722D7D0004B6D63 /* Preferences.swift in Sources */,
 				979DBD16272B6F970081339A /* Logger.swift in Sources */,
 				979DBD0A272B38690081339A /* UICollectionViewDiffableDataSource+SY.swift in Sources */,
 				97D5DD1D272585B800352F0C /* Album.swift in Sources */,

@@ -97,7 +97,7 @@ class MediasManager: NSObject {
     private var assets: [PHAsset] = []
     private(set) var medias: [Media] = [] {
         didSet {
-            PrefsManager.shared.cacheFileSizes(from: medias)
+            Preferences.shared.cacheFileSizes(from: medias)
             recomputeEvents()
             reloadAlbums()
             

@@ -24,7 +24,7 @@ struct Event {
     // MARK: Medias
     mutating func merge(withNextGroup group: Event) {
         if let endOfThisGroup = medias.last, let topOfNextGroup = group.medias.first {
-            PrefsManager.shared.link(media: endOfThisGroup, to: topOfNextGroup)
+            Preferences.shared.link(media: endOfThisGroup, to: topOfNextGroup)
         }
         medias.append(contentsOf: group.medias)
         medias.sort()
@@ -59,7 +59,7 @@ extension Event {
             }
             
             let link = LinkedMedia(mediaID1: prevMedia.asset.localIdentifier, mediaID2: media.asset.localIdentifier)
-            if (media.date - prevMedia.date) > 3600 && !PrefsManager.shared.linkedMedias.contains(link) {
+            if (media.date - prevMedia.date) > 3600 && !Preferences.shared.linkedMedias.contains(link) {
                 groups.append(Event())
             }
             
