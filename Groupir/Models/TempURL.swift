@@ -17,10 +17,17 @@ class TempURL {
         .urls(for: .cachesDirectory, in: .userDomainMask).first!
         .appendingPathComponent("previews", isDirectory: true)
     
+    private static let tmpFolder = FileManager.default
+        .temporaryDirectory
+    
     static func cleanup() {
         do {
             Logger.i(.tempURL, "Clearing up \(baseFolder)")
             try FileManager.default.removeItems(in: baseFolder)
+
+            // for some reasons, some files end up here as well, probably when the system converts videos on the fly to share in apps?
+            Logger.i(.tempURL, "Clearing up \(tmpFolder)")
+            try FileManager.default.removeItems(in: tmpFolder)
         }
         catch {
             Logger.e(.tempURL, "Couldn't clear up: \(error)")

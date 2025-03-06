@@ -11,7 +11,7 @@ extension FileManager {
     func removeItems(in folder: URL) throws {
         Logger.i(.fileManager, "Clearing up \(folder)")
         let resourceKeys = Set<URLResourceKey>([.isDirectoryKey])
-        let options: DirectoryEnumerationOptions = [.skipsHiddenFiles, .skipsPackageDescendants, .skipsSubdirectoryDescendants]
+        let options: DirectoryEnumerationOptions = [.skipsPackageDescendants]
         
         guard isDirectoryAndExists(at: folder) else { return }
         
