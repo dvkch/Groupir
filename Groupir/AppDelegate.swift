@@ -7,6 +7,9 @@
 
 import UIKit
 
+// TODO: https://github.com/amosavian/AMSMB2
+// TODO: redo in SwiftUI
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?

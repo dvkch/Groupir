@@ -25,7 +25,35 @@ class MediasManager: NSObject {
         }
 
         PHPhotoLibrary.shared().register(self)
+        
+        /*
+        PHPhotoLibrary.shared().performChanges({
+            PHCollectionListChangeRequest.creationRequestForCollectionList(withTitle: "Groupir")
+        }) { success, error in
+            if let error {
+                print("error \(error)")
+            }
+        }
+         */
     }
+    
+    // TODO: don't use preferences anymore. all in albums.
+    // TODO: add year filter in main VC
+    
+    
+    // MARK: NEW VERSION
+/*
+    enum Collection {
+        case event(String), album(String), remainder
+    }
+
+    func updateCollection(_ collection: Collection, assets: [PHAsset]) -> Future<(), Error> {
+        return performChangesFuture {
+            let yo = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: "yo")
+            print(yo.placeholderForCreatedAssetCollection.localIdentifier)
+        }
+    }
+  */
     
     // MARK: Events
     let events: ObservedObject<[Event]>

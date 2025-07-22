@@ -12,6 +12,14 @@ import BrightFutures
 import QuickLook
 import SYKit
 
+// TODO: export to SMB share
+// TODO: use Camera galleries instead
+// TODO: change the grouping to smthg like 4h unless its the same day
+
+// TODO: index scoll: dates
+// TODO: better preview on long tap menu
+// TODO: speed up deletion and moves
+
 class ViewController: UIViewController {
 
     // MARK: ViewController
@@ -326,9 +334,16 @@ class ViewController: UIViewController {
             selectionButtonItem.image = UIImage(systemName: "rectangle")
             navigationItem.rightBarButtonItem = quickJumpButtonItem
             let actions: [UIMenuElement] = biggestGroups.map { group in
-                UIAction(title: [group.title, group.details].joined(separator: "\n")) { [weak self] _ in
+                let action = UIAction() { [weak self] _ in
                     self?.scrollTo(group, animated: true)
                 }
+                if #available(iOS 15.0, *) {
+                    action.title = group.title
+                    action.subtitle = group.details
+                } else {
+                    action.title = [group.title, group.details].joined(separator: "\n")
+                }
+                return action
             }
             quickJumpButtonItem.menu = UIMenu(children: actions)
         }
