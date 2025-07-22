@@ -8,8 +8,7 @@
 import UIKit
 
 // TODO: redo in SwiftUI
-// TODO: fix send via AirDrop that sometimes doesnt work on large albums
-// TODO: add year filter in main VC
+// TODO: fix send via AirDrop that sometimes doesnt work on large albums -> seems to work on iOS 18, not on iOS 17?
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
