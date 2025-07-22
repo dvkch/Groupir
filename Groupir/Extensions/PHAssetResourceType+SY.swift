@@ -7,13 +7,13 @@
 
 import Photos
 
-extension PHAssetResourceType: Comparable {
+extension PHAssetResourceType: @retroactive Comparable {
     public static func < (lhs: PHAssetResourceType, rhs: PHAssetResourceType) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
 }
 
-extension PHAssetResourceType: CustomStringConvertible {
+extension PHAssetResourceType: @retroactive CustomStringConvertible {
     public var description: String {
         switch self {
         case .photo:                        return "photo"

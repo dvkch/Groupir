@@ -10,13 +10,19 @@ import UIKit
 enum AppError: Error {
     case noPhotosAccess
     case noFileURL
+    case noRootGroup
+    case couldntAddToAlbum
+    case couldntRemoveFromAlbum
 }
 
 extension AppError: LocalizedError {
     var errorDescription: String? {
         switch self {
-        case .noPhotosAccess: return "Access denied"
-        case .noFileURL: return "No file URL"
+        case .noPhotosAccess:           return "Access denied"
+        case .noFileURL:                return "No file URL"
+        case .noRootGroup:              return "No root group"
+        case .couldntAddToAlbum:        return "Couldn't add to album"
+        case .couldntRemoveFromAlbum:   return "Couldn't remove from album"
         }
     }
 }
@@ -24,10 +30,11 @@ extension AppError: LocalizedError {
 extension AppError: RecoverableError {
     var recoveryOptions: [String] {
         switch self {
-        case .noPhotosAccess:
-            return ["Change to permissions"]
-        case .noFileURL:
-            return []
+        case .noPhotosAccess:           return ["Change permissions"]
+        case .noFileURL:                return []
+        case .noRootGroup:              return []
+        case .couldntAddToAlbum:        return []
+        case .couldntRemoveFromAlbum:   return []
         }
     }
 
@@ -39,6 +46,15 @@ extension AppError: RecoverableError {
             return true
             
         case .noFileURL:
+            return false
+            
+        case .noRootGroup:
+            return false
+            
+        case .couldntAddToAlbum:
+            return false
+            
+        case .couldntRemoveFromAlbum:
             return false
         }
     }

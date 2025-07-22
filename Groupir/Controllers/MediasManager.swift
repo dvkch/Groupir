@@ -9,100 +9,20 @@ import Photos
 import BrightFutures
 import SYKit
 
+// TODO: add year filter in main VC
+
 class MediasManager: NSObject {
 
     // MARK: Init
     static let shared = MediasManager()
     private override init() {
         events = .init(initial: [])
-        albums = .init(initial: UserDefaults.standard.codableValue([Album].self, for: "meta_groups") ?? [])
-        albumsMediaIDs = Set(albums.value.map(\.mediaIDs).joined())
+        albums = .init(initial: [])
         super.init()
-
-        albums.addObserver(ref: self) { old, new in
-            self.albumsMediaIDs = Set(new.map(\.mediaIDs).joined())
-            UserDefaults.standard.setCodable(new, for: "meta_groups")
-        }
-
+        
         PHPhotoLibrary.shared().register(self)
-        
-        /*
-        PHPhotoLibrary.shared().performChanges({
-            PHCollectionListChangeRequest.creationRequestForCollectionList(withTitle: "Groupir")
-        }) { success, error in
-            if let error {
-                print("error \(error)")
-            }
-        }
-         */
     }
     
-    // TODO: don't use preferences anymore. all in albums.
-    // TODO: add year filter in main VC
-    
-    
-    // MARK: NEW VERSION
-/*
-    enum Collection {
-        case event(String), album(String), remainder
-    }
-
-    func updateCollection(_ collection: Collection, assets: [PHAsset]) -> Future<(), Error> {
-        return performChangesFuture {
-            let yo = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: "yo")
-            print(yo.placeholderForCreatedAssetCollection.localIdentifier)
-        }
-    }
-  */
-    
-    // MARK: Events
-    let events: ObservedObject<[Event]>
-    
-    private var currentReload: Future<(), AppError>?
-    func reloadEvents(progress: ((Float) -> ())?) -> Future<(), AppError> {
-        if let currentReload = currentReload {
-            return currentReload
-        }
-        
-        let future = eventGroups(progress: progress).andThen { _ in self.currentReload = nil }
-        currentReload = future
-        return future
-    }
-    
-    // MARK: Albums
-    let albums: ObservedObject<[Album]>
-    private var albumsMediaIDs: Set<String> = [] {
-        didSet {
-            guard albumsMediaIDs != oldValue else { return }
-            recomputeEvents()
-        }
-    }
-    
-    func isInAlbum(media: Media) -> Bool {
-        return albumsMediaIDs.contains(media.asset.localIdentifier)
-    }
-    
-    func addMedias(_ medias: [Media], to album: Album) {
-        var updatedAlbums = albums.value
-        
-        if !updatedAlbums.contains(album) {
-            updatedAlbums.append(album)
-        }
-        
-        guard let index = updatedAlbums.firstIndex(of: album) else { return }
-        updatedAlbums[index].add(medias: medias)
-        self.albums.value = updatedAlbums
-    }
-
-    func removeMediasFromAlbums(_ medias: [Media]) {
-        var updatedAlbums = albums.value
-        for i in 0..<updatedAlbums.count {
-            updatedAlbums[i].remove(medias: medias)
-        }
-        updatedAlbums.removeAll { $0.medias.isEmpty }
-        self.albums.value = updatedAlbums
-    }
-
     // MARK: Permissions
     private func askPermission() -> Future<(), AppError> {
         let status = PHPhotoLibrary.authorizationStatus()
@@ -121,6 +41,128 @@ class MediasManager: NSObject {
         }
     }
     
+    // MARK: Albums
+    private func ensureRootAlbum() -> Future<(), AppError> {
+        if let rootGroupID = Preferences.shared.rootGroupID, let rootGroup = [PHCollectionList].forResults(
+            PHCollectionList.fetchCollectionLists(withLocalIdentifiers: [rootGroupID], options: nil)
+        ).unique {
+            self.rootAlbum = rootGroup
+            return .init(value: ())
+        }
+
+        return Future.init { resolver in
+            var newRootGroupID: String? = nil
+            PHPhotoLibrary.shared().performChanges({
+                let request = PHCollectionListChangeRequest.creationRequestForCollectionList(withTitle: "Groupir")
+                newRootGroupID = request.placeholderForCreatedCollectionList.localIdentifier
+            }) { success, error in
+                if success,
+                    let newRootGroupID,
+                    let newRootGroup = [PHCollectionList].forResults(
+                        PHCollectionList.fetchCollectionLists(withLocalIdentifiers: [newRootGroupID], options: nil)
+                    ).unique
+                {
+                    Preferences.shared.rootGroupID = newRootGroupID
+                    self.rootAlbum = newRootGroup
+                    resolver(.success(()))
+                }
+                else {
+                    resolver(.failure(AppError.noRootGroup))
+                }
+            }
+        }
+    }
+
+    // MARK: Events
+    let events: ObservedObject<[Event]>
+    
+    private var currentReload: Future<(), AppError>?
+    func reloadEventsAndAlbums(progress: ((Float) -> ())?) -> Future<(), AppError> {
+        if let currentReload = currentReload {
+            return currentReload
+        }
+        
+        let future = eventGroups(progress: progress).andThen { _ in self.currentReload = nil }
+        currentReload = future
+        return future
+    }
+    
+    // MARK: Albums
+    private(set) var rootAlbum: PHCollectionList?
+    let albums: ObservedObject<[Album]>
+    
+    func isInAlbum(media: Media) -> Bool {
+        return albums.value.contains(where: { $0.mediaIDs.contains(media.asset.localIdentifier) })
+    }
+    
+    func createAlbum(title: String, completion: @escaping (Album) -> Void) {
+        guard let rootAlbum else {
+            print("No root album")
+            return
+        }
+
+        var newAlbumID: String? = nil
+        PHPhotoLibrary.shared().performChanges({
+            let creationRequest = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
+            newAlbumID = creationRequest.placeholderForCreatedAssetCollection.localIdentifier
+
+            PHCollectionListChangeRequest(for: rootAlbum)?.addChildCollections([creationRequest.placeholderForCreatedAssetCollection] as NSFastEnumeration)
+        }) { success, error in
+            if let error {
+                print("Couldn't add to album:", error)
+            }
+            let allAlbums = [PHCollection]
+                .forResults(PHCollection.fetchCollections(in: rootAlbum, options: nil))
+                .compactMap { $0 as? PHAssetCollection }
+            
+            if let newAlbumID, let newAlbum = allAlbums.first(where: { $0.localIdentifier == newAlbumID }) {
+                completion(Album(album: newAlbum, medias: []))
+            }
+        }
+        // the albums list will be updated when a library event triggers a reload
+    }
+    
+    func addMedias(_ medias: [Media], to album: Album) {
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetCollectionChangeRequest(for: album.album)?.addAssets(medias.map(\.asset) as NSFastEnumeration)
+        }) { success, error in
+            if let error {
+                print("Couldn't add to album:", error)
+            }
+        }
+        // the albums list will be updated when a library event triggers a reload
+    }
+
+    func removeMediasFromAlbums(_ medias: [Media]) {
+        let affectedAlbums = albums.value.filter { $0.contains(anyMediaIn: medias) }
+
+        PHPhotoLibrary.shared().performChanges({
+            for album in affectedAlbums {
+                PHAssetCollectionChangeRequest(for: album.album)?.removeAssets(medias.map(\.asset) as NSFastEnumeration)
+            }
+        }) { success, error in
+            if let error {
+                print("Couldn't remove from album:", error)
+            }
+            else if success {
+                self.cleanupEmptyAlbums(in: affectedAlbums)
+            }
+        }
+        // the albums list will be updated when a library event triggers a reload
+    }
+    
+    private func cleanupEmptyAlbums(in albums: [Album]) {
+        let emptyAlbums = albums.filter { PHAsset.fetchAssets(in: $0.album, options: nil).count == 0 }
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetCollectionChangeRequest.deleteAssetCollections(emptyAlbums.map(\.album) as NSFastEnumeration)
+        }) { success, error in
+            if let error {
+                print("Couldn't delete empty albums", error)
+            }
+        }
+        // the albums list will be updated when a library event triggers a reload
+    }
+
     // MARK: Library properties
     private var assets: [PHAsset] = []
     private(set) var medias: [Media] = [] {
@@ -147,19 +189,32 @@ class MediasManager: NSObject {
     private func obtainImages() -> Future<[PHAsset], AppError> {
         return Future.init { resolver in
             DispatchQueue.global(qos: .userInitiated).async {
-                let result = PHAsset.fetchAssets(with: nil)
-
-                var assets = [PHAsset]()
-                assets.reserveCapacity(result.count)
-                result.enumerateObjects { asset, _, _ in assets.append(asset) }
-                assets = assets.filter { $0.sourceType == .typeUserLibrary }
+                let assets = [PHAsset].forResults(PHAsset.fetchAssets(with: nil)) {
+                    $0.sourceType == .typeUserLibrary
+                }
                 resolver(.success(assets))
+            }
+        }
+    }
+    
+    private func obtainAlbums() -> Future<[PHAssetCollection], AppError> {
+        guard let rootAlbum else {
+            return .init(error: .noRootGroup)
+        }
+
+        return Future.init { resolver in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let collections = [PHCollection]
+                    .forResults(PHCollection.fetchCollections(in: rootAlbum, options: nil))
+                    .compactMap { $0 as? PHAssetCollection }
+                resolver(.success(collections))
             }
         }
     }
     
     private func eventGroups(progress progressClosure: ((Float) -> ())?) -> Future<(), AppError> {
         return askPermission()
+            .flatMap { self.ensureRootAlbum() }
             .flatMap { self.obtainImages() }
             .flatMap { (assets: [PHAsset]) -> Future<(), AppError> in
                 Future.init { resolver in
@@ -182,16 +237,26 @@ class MediasManager: NSObject {
                     }
                 }
             }
-    }
-    
-    func medias(in album: Album) -> [Media] {
-        return album.mediaIDs.compactMap { mediasDictionary[$0] }
+            .flatMap { self.obtainAlbums() }
+            .flatMap { (collections: [PHAssetCollection]) -> Future<(), AppError> in
+                Future.init { resolver in
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        self.albums.value = collections.map {
+                            let medias = [PHAsset]
+                                .forResults(PHAsset.fetchAssets(in: $0, options: nil))
+                                .compactMap { Media(asset: $0) }
+                            return Album(album: $0, medias: medias)
+                        }.sorted()
+                        resolver(.success(()))
+                    }
+                }
+            }
     }
 }
 
 extension MediasManager: PHPhotoLibraryChangeObserver {
     func photoLibraryDidChange(_ changeInstance: PHChange) {
-        _ = reloadEvents(progress: nil)
+        _ = reloadEventsAndAlbums(progress: nil)
     }
 }
 

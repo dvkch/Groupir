@@ -13,12 +13,16 @@ struct Event {
     private(set) var uniqueID = UUID().uuidString
     private(set) var medias: [Media] = []
 
-    var title: String {
-        Event.dateFormatter.string(from: medias.first?.date ?? Date(timeIntervalSince1970: 0))
+    private var startDate: Date {
+        medias.first?.date ?? Date(timeIntervalSince1970: 0)
     }
 
-    var mediaIDs: [String] {
-        medias.map(\.asset.localIdentifier)
+    var title: String {
+        Event.dateFormatter.string(from: startDate)
+    }
+
+    var mediaIDs: Set<String> {
+        Set(medias.map(\.asset.localIdentifier))
     }
 
     // MARK: Medias
@@ -31,10 +35,6 @@ struct Event {
 
         // helpful to force refreshing the section headers after a merge
         uniqueID = UUID().uuidString
-    }
-    
-    mutating func remove(medias: [Media]) {
-        self.medias.removeAll(where: { medias.contains($0) })
     }
     
     // MARK: Formatters
@@ -51,6 +51,8 @@ extension Event: Group {}
 
 extension Event {
     static func group(medias: [Media]) -> [Event] {
+        let calendar = Calendar.autoupdatingCurrent
+
         var groups: [Event] = []
         medias.sorted().forEachWithPrevious { media, prevMedia in
             guard let prevMedia = prevMedia else {
@@ -59,12 +61,22 @@ extension Event {
             }
             
             let link = LinkedMedia(mediaID1: prevMedia.asset.localIdentifier, mediaID2: media.asset.localIdentifier)
-            if (media.date - prevMedia.date) > 3600 && !Preferences.shared.linkedMedias.contains(link) {
+            if !calendar.isDate(media.date, inSameDayAs: prevMedia.date) && (media.date - prevMedia.date) > 7200 && !Preferences.shared.linkedMedias.contains(link) {
                 groups.append(Event())
             }
             
             groups[groups.count - 1].medias.append(media)
         }
         return groups
+    }
+}
+
+extension Event: CollectionViewIndexable {
+    private static let calendar = Calendar.autoupdatingCurrent
+
+    var collectionViewIndex: (id: UInt64, title: String) {
+        let year = type(of: self).calendar.component(.year, from: startDate)
+        let month = type(of: self).calendar.component(.month, from: startDate)
+        return (UInt64(year) * 12 + UInt64(month), "•")
     }
 }

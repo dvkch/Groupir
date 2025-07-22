@@ -7,7 +7,6 @@
 
 import UIKit
 
-// TODO: https://github.com/amosavian/AMSMB2
 // TODO: redo in SwiftUI
 
 @main

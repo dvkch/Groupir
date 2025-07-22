@@ -12,10 +12,8 @@ protocol Groupable: CustomStringConvertible {
     var uniqueID: String { get }
     var title: String { get }
     var medias: [Media] { get }
-    var mediaIDs: [String] { get }
+    var mediaIDs: Set<String> { get }
     var size: UInt64 { get }
-
-    mutating func remove(medias: [Media])
 }
 
 extension Groupable {
@@ -28,7 +26,7 @@ extension Groupable {
     }
     
     func contains(anyMediaIn medias: [Media]) -> Bool {
-        return Set(self.mediaIDs).intersection(Set(medias.map(\.asset.localIdentifier))).isNotEmpty
+        return mediaIDs.intersection(Set(medias.map(\.asset.localIdentifier))).isNotEmpty
     }
 
     var description: String {

@@ -13,6 +13,10 @@ class Preferences {
     // MARK: Init
     static let shared = Preferences()
     private init() { }
+    
+    // MARK: Albums
+    @PrefValue(key: "root_group_id", defaultValue: nil, ubiquitous: nil)
+    var rootGroupID: String?
 
     // MARK: File size cache
     @PrefValue(key: "cached_file_sizes", defaultValue: [:], ubiquitous: nil)

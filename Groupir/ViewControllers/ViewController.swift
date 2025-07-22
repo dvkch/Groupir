@@ -12,11 +12,6 @@ import BrightFutures
 import QuickLook
 import SYKit
 
-// TODO: export to SMB share
-// TODO: use Camera galleries instead
-// TODO: change the grouping to smthg like 4h unless its the same day
-
-// TODO: index scoll: dates
 // TODO: better preview on long tap menu
 // TODO: speed up deletion and moves
 
@@ -142,8 +137,8 @@ class ViewController: UIViewController {
     }
     
     // MARK: Properties
-    private var eventsDataSource: UICollectionViewDiffableDataSource<Event, Media>!
-    private var albumsDataSource: UICollectionViewDiffableDataSource<Album, Media>!
+    private var eventsDataSource: DiffableDataSource<Event, Media>!
+    private var albumsDataSource: DiffableDataSource<Album, Media>!
 
     // MARK: Views
     private var selectionButtonItem = UIBarButtonItem()
@@ -171,7 +166,7 @@ class ViewController: UIViewController {
     private func loadGroups(_ success: (() -> ())? = nil) {
         let hud = HUDAlertController.show(in: self)
         MediasManager.shared
-            .reloadEvents(progress: { progress in 
+            .reloadEventsAndAlbums(progress: { progress in
                 hud.progress = progress
             })
             .onSuccess { _ in 
@@ -219,11 +214,14 @@ class ViewController: UIViewController {
         vc.addAction(UIAlertAction(title: "New group...", style: .default, handler: { _ in
             let newGroupVC = UIAlertController(title: "Enter a group name", message: nil, preferredStyle: .alert)
             newGroupVC.addTextField { field in
+                field.autocapitalizationType = .words
+                field.autocorrectionType = .yes
                 field.placeholder = "Name"
             }
             newGroupVC.addAction(UIAlertAction(title: "Create", style: .default, handler: { _ in
-                let group = Album(title: newGroupVC.textFields?.first?.text ?? "Group")
-                self.add(medias: medias, to: group)
+                MediasManager.shared.createAlbum(title: newGroupVC.textFields?.first?.text ?? "Group") { newAlbum in
+                    self.add(medias: medias, to: newAlbum)
+                }
             }))
             newGroupVC.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
             self.present(newGroupVC, animated: true, completion: nil)
