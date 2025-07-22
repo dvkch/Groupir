@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MainViewController.swift
 //  Groupir
 //
 //  Created by Stanislas Chevallier on 21/10/2021.
@@ -12,7 +12,7 @@ import BrightFutures
 import QuickLook
 import SYKit
 
-class ViewController: UIViewController {
+class MainViewController: UIViewController {
 
     // MARK: ViewController
     override func viewDidLoad() {
@@ -345,7 +345,7 @@ class ViewController: UIViewController {
     }
 }
 
-extension ViewController: GroupCellDelegate {
+extension MainViewController: GroupCellDelegate {
     func groupCell(_ groupCell: GroupCell, tappedShareOn group: Groupable) {
         share(medias: group.medias)
     }
@@ -386,7 +386,7 @@ extension ViewController: GroupCellDelegate {
     }
 }
 
-extension ViewController: UICollectionViewDelegateFlowLayout {
+extension MainViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let availableWidth = collectionView.bounds.inset(by: collectionView.adjustedContentInset).width
         let itemsCount = (availableWidth / 70).rounded(.down)
