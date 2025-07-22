@@ -327,7 +327,7 @@ class MainViewController: UIViewController {
 
             title = Event(medias: Array(groups.map(\.medias).joined())).details
             selectionButtonItem.image = UIImage(systemName: "rectangle")
-            navigationItem.rightBarButtonItem = quickJumpButtonItem
+            
             let actions: [UIMenuElement] = biggestGroups.map { group in
                 let action = UIAction() { [weak self] _ in
                     self?.scrollTo(group, animated: true)
@@ -341,6 +341,8 @@ class MainViewController: UIViewController {
                 return action
             }
             quickJumpButtonItem.menu = UIMenu(children: actions)
+
+            navigationItem.rightBarButtonItems = [quickJumpButtonItem]
         }
     }
 }
