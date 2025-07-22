@@ -235,7 +235,7 @@ class MainViewController: UIViewController {
         MediasManager.shared.removeMediasFromAlbums(medias)
     }
     
-    private func share(medias: [Media]) {
+    private func share(medias: [Media], sender: UIView) {
         let hud = HUDAlertController.show(in: self)
 
         medias
@@ -246,6 +246,9 @@ class MainViewController: UIViewController {
                     activityItems: Array(items.joined()).compactMap(\.sharingURL),
                     applicationActivities: nil
                 )
+                shareVC.popoverPresentationController?.sourceView = sender
+                shareVC.popoverPresentationController?.sourceRect = sender.bounds
+                shareVC.popoverPresentationController?.permittedArrowDirections = .any
                 shareVC.completionWithItemsHandler = { _, _, _, _ in
                     _ = items // let's keep a ref around around until sharing is done, or the files will disappear
                 }
@@ -310,13 +313,14 @@ class MainViewController: UIViewController {
             navigationItem.rightBarButtonItem = selectionActionsButtonItem
             let actions = MediaAction.available(for: selectedMedias).map { action in
                 return UIAction(title: action.title, image: action.image) { [weak self] _ in
+                    guard let self else { return }
                     switch action {
-                    case .addToAlbum:       self?.addMediasToGroup(selectedMedias)
-                    case .removeFromAlbum:  self?.removeMediasFromAlbums(selectedMedias)
-                    case .share:            self?.share(medias: selectedMedias)
-                    case .delete:           self?.delete(medias: selectedMedias)
+                    case .addToAlbum:       self.addMediasToGroup(selectedMedias)
+                    case .removeFromAlbum:  self.removeMediasFromAlbums(selectedMedias)
+                    case .share:            self.share(medias: selectedMedias, sender: self.view)
+                    case .delete:           self.delete(medias: selectedMedias)
                     }
-                    self?.isEditing = false
+                    self.isEditing = false
                 }
             }
             selectionActionsButtonItem.menu = UIMenu(children: actions)
@@ -348,8 +352,8 @@ class MainViewController: UIViewController {
 }
 
 extension MainViewController: GroupCellDelegate {
-    func groupCell(_ groupCell: GroupCell, tappedShareOn group: Groupable) {
-        share(medias: group.medias)
+    func groupCell(_ groupCell: GroupCell, tappedShareOn group: any Groupable, sender: UIView) {
+        share(medias: group.medias, sender: sender)
     }
     
     func groupCell(_ groupCell: GroupCell, tappedMergeWithPreviousOn group: Event) {
@@ -444,7 +448,7 @@ extension MainViewController: UICollectionViewDelegateFlowLayout {
                 switch action {
                 case .addToAlbum:       self?.addMediasToGroup([media])
                 case .removeFromAlbum:  self?.removeMediasFromAlbums([media])
-                case .share:            self?.share(medias: [media])
+                case .share:            self?.share(medias: [media], sender: cell)
                 case .delete:           self?.delete(medias: [media])
                 }
             }
