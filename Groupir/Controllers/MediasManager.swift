@@ -9,8 +9,6 @@ import Photos
 import BrightFutures
 import SYKit
 
-// TODO: add year filter in main VC
-
 class MediasManager: NSObject {
 
     // MARK: Init

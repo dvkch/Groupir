@@ -30,6 +30,7 @@
 		97CFC3A32724EBA30064FA6D /* LinkedMedias.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CFC3A22724EBA30064FA6D /* LinkedMedias.swift */; };
 		97CFC3A52724F6990064FA6D /* MediasViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97CFC3A42724F6990064FA6D /* MediasViewController.swift */; };
 		97D231232E30391C006C130D /* PHFetchResult+SY.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D231222E303916006C130D /* PHFetchResult+SY.swift */; };
+		97D231252E304468006C130D /* MediaPreviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D231242E304460006C130D /* MediaPreviewViewController.swift */; };
 		97D5DD1D272585B800352F0C /* Album.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D5DD1C272585B800352F0C /* Album.swift */; };
 		97D5DD1F2725870E00352F0C /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D5DD1E2725870E00352F0C /* Group.swift */; };
 		97F9DB552721816700A7DCC3 /* Media.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F9DB542721816700A7DCC3 /* Media.swift */; };
@@ -71,6 +72,7 @@
 		97CFC3A22724EBA30064FA6D /* LinkedMedias.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkedMedias.swift; sourceTree = "<group>"; };
 		97CFC3A42724F6990064FA6D /* MediasViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediasViewController.swift; sourceTree = "<group>"; };
 		97D231222E303916006C130D /* PHFetchResult+SY.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PHFetchResult+SY.swift"; sourceTree = "<group>"; };
+		97D231242E304460006C130D /* MediaPreviewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPreviewViewController.swift; sourceTree = "<group>"; };
 		97D5DD1C272585B800352F0C /* Album.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Album.swift; sourceTree = "<group>"; };
 		97D5DD1E2725870E00352F0C /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		97F9DB542721816700A7DCC3 /* Media.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Media.swift; sourceTree = "<group>"; };
@@ -133,9 +135,10 @@
 		97F9DB512721811400A7DCC3 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				9753403A27217F960079F537 /* ViewController.swift */,
-				97CFC3A42724F6990064FA6D /* MediasViewController.swift */,
 				979DBD09272B38690081339A /* DiffableDataSource.swift */,
+				97D231242E304460006C130D /* MediaPreviewViewController.swift */,
+				97CFC3A42724F6990064FA6D /* MediasViewController.swift */,
+				9753403A27217F960079F537 /* ViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -321,6 +324,7 @@
 				979DBD08272B37B30081339A /* NSDiffableDataSourceSnapshot+SY.swift in Sources */,
 				971F7D2A2D3BD0580004A7F9 /* PHPhotoLibrary+SY.swift in Sources */,
 				97F9DB63272189CF00A7DCC3 /* MediaCell.swift in Sources */,
+				97D231252E304468006C130D /* MediaPreviewViewController.swift in Sources */,
 				9753403927217F960079F537 /* SceneDelegate.swift in Sources */,
 				97F9DB5E2721854400A7DCC3 /* MediasManager.swift in Sources */,
 				979DBD1C272B7DBB0081339A /* MediaAction.swift in Sources */,

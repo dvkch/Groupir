@@ -8,6 +8,8 @@
 import UIKit
 
 // TODO: redo in SwiftUI
+// TODO: fix send via AirDrop that sometimes doesnt work on large albums
+// TODO: add year filter in main VC
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {

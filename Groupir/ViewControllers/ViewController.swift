@@ -12,9 +12,6 @@ import BrightFutures
 import QuickLook
 import SYKit
 
-// TODO: better preview on long tap menu
-// TODO: speed up deletion and moves
-
 class ViewController: UIViewController {
 
     // MARK: ViewController
@@ -454,6 +451,8 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
         let actionProvider: UIContextMenuActionProvider = { _ in
             return UIMenu(title: media.filename, children: actions)
         }
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: actionProvider)
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: {
+            MediaPreviewViewController(media: media)
+        }, actionProvider: actionProvider)
     }
 }
