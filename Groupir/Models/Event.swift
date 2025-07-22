@@ -70,13 +70,3 @@ extension Event {
         return groups
     }
 }
-
-extension Event: CollectionViewIndexable {
-    private static let calendar = Calendar.autoupdatingCurrent
-
-    var collectionViewIndex: (id: UInt64, title: String) {
-        let year = type(of: self).calendar.component(.year, from: startDate)
-        let month = type(of: self).calendar.component(.month, from: startDate)
-        return (UInt64(year) * 12 + UInt64(month), "•")
-    }
-}

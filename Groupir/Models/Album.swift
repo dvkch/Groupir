@@ -26,12 +26,4 @@ struct Album {
     let mediaIDs: Set<String>
 }
 
-extension Album: Group {
-    
-}
-
-extension Album: CollectionViewIndexable {
-    var collectionViewIndex: (id: String, title: String) {
-        return (uniqueID, title)
-    }
-}
+extension Album: Group {}
