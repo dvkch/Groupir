@@ -213,6 +213,20 @@ class MediasManager: NSObject {
     private func eventGroups(progress progressClosure: ((Float) -> ())?) -> Future<(), AppError> {
         return askPermission()
             .flatMap { self.ensureRootAlbum() }
+            .flatMap { self.obtainAlbums() }
+            .flatMap { (collections: [PHAssetCollection]) -> Future<(), AppError> in
+                Future.init { resolver in
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        self.albums.value = collections.map {
+                            let medias = [PHAsset]
+                                .forResults(PHAsset.fetchAssets(in: $0, options: nil))
+                                .compactMap { Media(asset: $0) }
+                            return Album(album: $0, medias: medias)
+                        }.sorted()
+                        resolver(.success(()))
+                    }
+                }
+            }
             .flatMap { self.obtainImages() }
             .flatMap { (assets: [PHAsset]) -> Future<(), AppError> in
                 Future.init { resolver in
@@ -230,20 +244,6 @@ class MediasManager: NSObject {
                         self.medias = assets.enumerated().compactMap {
                             progress = Float($0.offset) / Float(assets.count)
                             return Media(asset: $0.element)
-                        }.sorted()
-                        resolver(.success(()))
-                    }
-                }
-            }
-            .flatMap { self.obtainAlbums() }
-            .flatMap { (collections: [PHAssetCollection]) -> Future<(), AppError> in
-                Future.init { resolver in
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        self.albums.value = collections.map {
-                            let medias = [PHAsset]
-                                .forResults(PHAsset.fetchAssets(in: $0, options: nil))
-                                .compactMap { Media(asset: $0) }
-                            return Album(album: $0, medias: medias)
                         }.sorted()
                         resolver(.success(()))
                     }

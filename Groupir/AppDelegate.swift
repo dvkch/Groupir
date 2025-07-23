@@ -8,6 +8,7 @@
 import UIKit
 
 // TODO: redo in SwiftUI
+// TODO: use PHChange instance to determine what to reload instead of reloading the entire library
 // TODO: fix send via AirDrop that sometimes doesnt work on large albums -> seems to work on iOS 18, not on iOS 17?
 
 @main
