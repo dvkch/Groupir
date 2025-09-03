@@ -10,19 +10,21 @@ import QuickLook
 import Photos
 
 class MediasViewController: QLPreviewController {
-    
-    // MARK: ViewControllers
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    required init(medias: [Media], initialIndex: Int) {
+        self.medias = medias
+        super.init(nibName: nil, bundle: nil)
         dataSource = self
         delegate = self
         currentPreviewItemIndex = initialIndex
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(deleteCurrentItem))
     }
     
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: Properties
-    var initialIndex: Int = 0
-    var medias: [Media] = [] {
+    private(set) var medias: [Media] {
         didSet {
             reloadData()
         }
@@ -48,10 +50,10 @@ class MediasViewController: QLPreviewController {
                         self.dismiss(animated: true, completion: nil)
                     }
                     else {
-                        self.medias.remove(at: index)
-                        while self.currentPreviewItemIndex >= self.medias.count {
+                        if index == self.medias.count - 1 {
                             self.currentPreviewItemIndex -= 1
                         }
+                        self.medias.remove(at: index)
                         self.reloadData()
                     }
                 }

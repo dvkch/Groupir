@@ -203,7 +203,7 @@ class MainViewController: UIViewController {
     
     private func addMediasToGroup(_ medias: [Media]) {
         let vc = UIAlertController(title: "Which group?", message: nil, preferredStyle: .actionSheet)
-        MediasManager.shared.albums.value.forEach { group in
+        MediasManager.shared.albums.value.sorted(by: \.title).forEach { group in
             vc.addAction(UIAlertAction(title: group.title, style: .default, handler: { _ in
                 self.add(medias: medias, to: group)
             }))
@@ -424,9 +424,7 @@ extension MainViewController: UICollectionViewDelegateFlowLayout {
         }
         guard medias.isNotEmpty else { return }
 
-        let vc = MediasViewController()
-        vc.medias = medias
-        vc.initialIndex = indexPath.item
+        let vc = MediasViewController(medias: medias, initialIndex: indexPath.item)
         vc.animationViews = collectionView.visibleCells
             .compactMap { $0 as? MediaCell }
             .filter { $0.media != nil }
